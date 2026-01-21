@@ -1,0 +1,70 @@
+# =========================================
+#  GLOBAL
+# =========================================
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.suo
+*.user
+*.sln.docstates
+
+# =========================================
+#  ANGULAR (frontend)
+# =========================================
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.vscode/
+frontend/.idea/
+frontend/npm-debug.log*
+frontend/yarn-error.log*
+frontend/package-lock.json      # opcional, quítalo si lo quieres versionado
+frontend/.eslintcache
+frontend/coverage/
+frontend/.husky/_
+
+# =========================================
+#  .NET 8 (backend)
+# =========================================
+backend/**/bin/
+backend/**/obj/
+backend/**/packages/
+backend/**/*.user
+backend/**/*.suo
+backend/**/*.dbmdl
+backend/**/*.jfm
+backend/**/*.pfx
+backend/**/*.publishsettings
+backend/aspnetcore-https/        # certs locales VS
+backend/.vs/
+backend/.idea/
+backend/TestResults/
+backend/coverage/
+backend/*.log
+
+# =========================================
+#  DB (scripts locales + volúmenes)
+# =========================================
+db/*.bak
+db/*.sql~
+db/data/          # si montas volúmenes locales durante desarrollo
+db/backups/
+
+# =========================================
+#  DOCKER
+# =========================================
+.docker/
+*.env               # nunca subas .env con secrets
+!.env.example       # sí subir plantilla
+
+# =========================================
+#  IDE
+# =========================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+*.iml
+.idea/
