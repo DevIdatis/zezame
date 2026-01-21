@@ -28,21 +28,21 @@ frontend/.husky/_
 # =========================================
 #  .NET 8 (backend)
 # =========================================
-backend/**/bin/
-backend/**/obj/
-backend/**/packages/
-backend/**/*.user
-backend/**/*.suo
-backend/**/*.dbmdl
-backend/**/*.jfm
-backend/**/*.pfx
-backend/**/*.publishsettings
-backend/aspnetcore-https/        # certs locales VS
-backend/.vs/
-backend/.idea/
-backend/TestResults/
-backend/coverage/
-backend/*.log
+zezame-backend/**/bin/
+zezame-backend/**/obj/
+zezame-backend/**/packages/
+zezame-backend/**/*.user
+zezame-backend/**/*.suo
+zezame-backend/**/*.dbmdl
+zezame-backend/**/*.jfm
+zezame-backend/**/*.pfx
+zezame-backend/**/*.publishsettings
+zezame-backend/aspnetcore-https/        # certs locales VS
+zezame-backend/.vs/
+zezame-backend/.idea/
+zezame-backend/TestResults/
+zezame-backend/coverage/
+zezame-backend/*.log
 
 # =========================================
 #  DB (scripts locales + volúmenes)
