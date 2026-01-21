@@ -1,0 +1,31 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+  <form [formGroup]="form" (ngSubmit)="submit()"
+        class="w-full max-w-sm bg-white rounded-lg shadow p-6 space-y-4">
+    <h2 class="text-2xl font-bold">Iniciar sesión</h2>
+
+    <div>
+      <label class="block mb-1 text-sm font-medium">Email</label>
+      <input type="email" formControlName="email"
+             class="bg-gray-50 border border-gray-300 rounded-lg w-full p-2.5">
+    </div>
+
+    <div>
+      <label class="block mb-1 text-sm font-medium">Contraseña</label>
+      <input type="password" formControlName="password"
+             class="bg-gray-50 border border-gray-300 rounded-lg w-full p-2.5">
+    </div>
+
+    @if (error) {
+        <div class="text-red-600 text-sm">{{error}}</div>
+    }
+
+    <button type="submit" [disabled]="form.invalid"
+            class="w-full text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5">
+      Entrar
+    </button>
+
+    <a routerLink="/register" class="text-sm text-blue-600 hover:underline">
+      ¿No tienes cuenta? Regístrate
+    </a>
+  </form>
+</div>
