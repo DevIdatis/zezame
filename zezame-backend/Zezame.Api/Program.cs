@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Zezame.Api.Hubs;
+using Zezame.Api.Middleware;
 using Zezame.Api.Services;
 using Zezame.Domain.Interfaces;
 using Zezame.Infrastructure.Persistence;
@@ -45,6 +46,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
