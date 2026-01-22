@@ -22,8 +22,8 @@ namespace Zezame.Api.Middleware {
             };
 
             var response = new {
-                StatusCode = context.Response.StatusCode,
-                Message = exception.Message
+                statusCode = context.Response.StatusCode,
+                message = exception.Message
             };
 
             return context.Response.WriteAsync(JsonSerializer.Serialize(response));

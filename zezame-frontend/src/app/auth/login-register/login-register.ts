@@ -48,8 +48,8 @@ export class LoginRegister {
         next: () => this.router.navigate(['/dashboard']),
         error: (e) =>
           this.errorModal.open({
-            title: 'Error al guardar',
-            message: e.message ?? 'Revisa tu conexión',
+            title: 'Error al realizar el login',
+            message: e.error.message ?? 'Revisa tu conexión',
           }),
       });
     } else {
@@ -57,8 +57,8 @@ export class LoginRegister {
         next: () => this.router.navigate(['/dashboard']),
         error: (e) =>
           this.errorModal.open({
-            title: 'Error al guardar',
-            message: e.message ?? 'Revisa tu conexión',
+            title: 'Error al realizar el registro',
+            message: e.error.message ?? 'Revisa tu conexión',
           }),
       });
     }
