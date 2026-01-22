@@ -1,0 +1,22 @@
+@if (state$ | async; as err) {
+  <div
+    class="fixed inset-0 z-[9999] grid place-items-center p-4 bg-black/40 animate-fade-in"
+    (click)="close()"
+  >
+    <div
+      class="card-glass max-w-md w-full rounded-2xl p-6 animate-scale-in"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center gap-3 mb-4">
+        <lucide-icon [img]="icons.XCircle" class="w-8 h-8 text-destructive"></lucide-icon>
+        <h3 class="text-xl font-bold font-display text-foreground">{{ err.title }}</h3>
+      </div>
+
+      <p class="text-muted-foreground mb-6">{{ err.message }}</p>
+
+      <div class="flex justify-end">
+        <button class="btn-primary" (click)="close()">Entendido</button>
+      </div>
+    </div>
+  </div>
+}

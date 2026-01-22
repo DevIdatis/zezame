@@ -10,6 +10,11 @@ using Zezame.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(o => o.AddPolicy("AllowAll", p => p
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader()));
+
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<ZezameDbContext>(options =>
@@ -48,6 +53,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAll");
 app.MapHub<TimeHub>("/timeHub");
 app.UseHttpsRedirection();
 app.MapControllers();

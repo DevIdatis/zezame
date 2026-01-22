@@ -1,0 +1,161 @@
+@if (isOpen) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div
+      class="relative sm:max-w-md w-full mx-4 p-0 bg-gradient-to-br from-background via-background to-coral/5 rounded-3xl border border-border/50 shadow-2xl overflow-hidden"
+    >
+      <!-- Decorations -->
+      <div
+        class="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-coral/30 to-yellow/30 rounded-full blur-3xl"
+      ></div>
+      <div
+        class="absolute -bottom-20 -left-20 w-40 h-40 bg-gradient-to-br from-cyan/30 to-lime/30 rounded-full blur-3xl"
+      ></div>
+
+      <!-- Close -->
+      <button
+        (click)="closeModal()"
+        class="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors"
+      >
+        <lucide-icon [img]="X" class="w-6 h-6 text-muted-foreground"></lucide-icon>
+      </button>
+
+      <!-- Header -->
+      <div class="p-8 pb-4 text-center">
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <div class="relative">
+            <div
+              class="w-14 h-14 bg-gradient-to-br from-coral via-yellow to-cyan rounded-2xl flex items-center justify-center shadow-lg animate-float"
+            >
+              <lucide-icon [img]="Lock" class="w-7 h-7 text-white"></lucide-icon>
+            </div>
+            <lucide-icon
+              [img]="Sparkles"
+              class="absolute -top-1 -right-1 w-5 h-5 text-yellow animate-pulse"
+            ></lucide-icon>
+          </div>
+
+          <span
+            class="text-3xl font-display font-bold bg-gradient-to-r from-coral via-yellow to-cyan bg-clip-text text-transparent"
+          >
+            Zezame
+          </span>
+        </div>
+
+        <h2 class="text-2xl font-display">
+          {{ isSignUp ? '¡Únete a la diversión! 🎉' : '¡Bienvenido de vuelta! 👋' }}
+        </h2>
+
+        <p class="text-muted-foreground mt-2">
+          {{
+            isSignUp
+              ? 'Crea tu cuenta y empieza a gestionar tu tiempo'
+              : 'Te echábamos de menos, ¡vamos a ser productivos!'
+          }}
+        </p>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="submit()" class="p-8 pt-4 space-y-5">
+        @if (isSignUp) {
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Nombre completo</label>
+            @if (form.get('fullname')?.invalid && form.get('fullname')?.touched) {
+              <span
+                class="text-xs font-medium text-coral bg-coral/10 mx-2 px-2 py-0.5 rounded-full"
+              >
+                Requerido
+              </span>
+            }
+            <input
+              type="text"
+              formControlName="fullname"
+              placeholder="Tu nombre aquí ✨"
+              class="h-12 w-full rounded-xl border-2 border-border/50 bg-background/50 px-4 focus:border-coral"
+            />
+          </div>
+        }
+
+        <!-- Email -->
+        <div class="space-y-2">
+          <label class="text-sm font-medium">Email</label>
+          @if (form.get('email')?.invalid && form.get('email')?.touched) {
+            <span class="text-xs font-medium text-coral bg-coral/10 mx-2 px-2 py-0.5 rounded-full">
+              Requerido
+            </span>
+          }
+          <div class="relative">
+            <lucide-icon
+              [img]="Mail"
+              class="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"
+            ></lucide-icon>
+            <input
+              type="email"
+              formControlName="email"
+              name="email"
+              placeholder="tu@email.com"
+              class="h-12 w-full rounded-xl border-2 border-border/50 bg-background/50 pl-12 pr-4 focus:border-coral"
+            />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="space-y-2">
+          <label class="text-sm font-medium">Contraseña</label>
+          @if (form.get('password')?.invalid && form.get('password')?.touched) {
+            <span class="text-xs font-medium text-coral bg-coral/10 mx-2 px-2 py-0.5 rounded-full">
+              Requerido
+            </span>
+          }
+          <div class="relative">
+            <lucide-icon
+              [img]="Lock"
+              class="absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"
+            ></lucide-icon>
+
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              name="password"
+              placeholder="••••••••"
+              class="h-12 w-full rounded-xl border-2 border-border/50 bg-background/50 pl-12 pr-12 focus:border-coral"
+            />
+
+            <button
+              type="button"
+              (click)="showPassword = !showPassword"
+              class="absolute right-4 top-1/2 -translate-y-1/2"
+            >
+              <lucide-icon
+                [img]="showPassword ? EyeOff : Eye"
+                class="w-5 h-5 text-muted-foreground"
+              ></lucide-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          [disabled]="form.invalid"
+          class="relative w-full h-12 rounded-xl bg-gradient-to-r from-coral via-coral to-yellow text-white font-semibold text-lg shadow-lg shadow-coral/25 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          @if (auth.isLoading$ | async) {
+            <span class="flex items-center justify-center">
+              <span class="btn-loader"></span>
+            </span>
+          } @else {
+            {{ isSignUp ? 'Crear cuenta 🚀' : 'Iniciar sesión ✨' }}
+          }
+        </button>
+
+        <!-- Toggle -->
+        <p class="text-center text-sm text-muted-foreground pt-2">
+          {{ isSignUp ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?' }}
+          <button type="button" (click)="toggleMode()" class="text-coral font-semibold ml-1">
+            {{ isSignUp ? 'Inicia sesión' : 'Regístrate gratis' }}
+          </button>
+        </p>
+      </form>
+    </div>
+  </div>
+}

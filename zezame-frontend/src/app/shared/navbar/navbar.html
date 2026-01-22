@@ -78,8 +78,5 @@
   </div>
 </nav>
 
-<!-- <app-login-modal
-  [isOpen]="showLogin"
-  (close)="showLogin = false"
-  (login)="handleLogin()">
-</app-login-modal> -->
+<app-login-register [isOpen]="showLogin" (close)="showLogin = false" (login)="handleLogin()">
+</app-login-register>

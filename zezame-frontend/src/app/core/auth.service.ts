@@ -15,23 +15,30 @@ export class AuthService {
   public currentUser$ = this.user$.asObservable();
   public isLoggedIn$ = this.user$.pipe(map((u) => !!u));
 
+  private loading$ = new BehaviorSubject<boolean>(false);
+  public isLoading$ = this.loading$.asObservable();
+
   login(body: LoginRequest): Observable<TokenResponse> {
-    return this.http
-      .post<TokenResponse>(`${this.api}/auth/login`, body)
-      .pipe(tap((res) => this.handleAuth(res)));
+    this.loading$.next(true);
+    return this.http.post<TokenResponse>(`${this.api}/auth/login`, body).pipe(
+      tap((res) => this.handleAuth(res)),
+      tap({ finalize: () => this.loading$.next(false) }),
+    );
   }
 
   register(body: RegisterRequest): Observable<TokenResponse> {
-    return this.http
-      .post<TokenResponse>(`${this.api}/auth/register`, body)
-      .pipe(tap((res) => this.handleAuth(res)));
+    this.loading$.next(true);
+    return this.http.post<TokenResponse>(`${this.api}/auth/register`, body).pipe(
+      tap((res) => this.handleAuth(res)),
+      tap({ finalize: () => this.loading$.next(false) }),
+    );
   }
 
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('expires');
     this.user$.next(null);
-    //this.router.navigate(['/login']);
+    this.router.navigate(['/main']);
   }
 
   private handleAuth(res: TokenResponse): void {
