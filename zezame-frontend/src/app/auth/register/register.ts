@@ -16,7 +16,7 @@ export class Register {
   private router = inject(Router);
 
   form = this.fb.group({
-    email:    ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
     fullname: ['', Validators.required],
   });
@@ -28,7 +28,7 @@ export class Register {
 
     this.auth.register(this.form.value as RegisterRequest).subscribe({
       next: () => this.router.navigate(['/dashboard']),
-      error: e => this.error = e.error || 'Usuario ya registrado'
+      error: (e) => (this.error = e.error || 'Usuario ya registrado'),
     });
   }
 }

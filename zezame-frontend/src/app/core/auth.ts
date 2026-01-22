@@ -13,23 +13,25 @@ export class AuthService {
 
   private user$ = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.user$.asObservable();
-  public isLoggedIn$ = this.user$.pipe(map(u => !!u));
+  public isLoggedIn$ = this.user$.pipe(map((u) => !!u));
 
   login(body: LoginRequest): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>(`${this.api}/auth/login`, body)
-      .pipe(tap(res => this.handleAuth(res)));
+    return this.http
+      .post<TokenResponse>(`${this.api}/auth/login`, body)
+      .pipe(tap((res) => this.handleAuth(res)));
   }
 
   register(body: RegisterRequest): Observable<TokenResponse> {
-    return this.http.post<TokenResponse>(`${this.api}/auth/register`, body)
-      .pipe(tap(res => this.handleAuth(res)));
+    return this.http
+      .post<TokenResponse>(`${this.api}/auth/register`, body)
+      .pipe(tap((res) => this.handleAuth(res)));
   }
 
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('expires');
     this.user$.next(null);
-    this.router.navigate(['/login']);
+    //this.router.navigate(['/login']);
   }
 
   private handleAuth(res: TokenResponse): void {
@@ -42,7 +44,7 @@ export class AuthService {
     const user: User = {
       id: payload.sub || payload.nameidentifier, // por seguridad soporta sub o nameidentifier
       email: payload.email,
-      fullName: payload.name
+      fullName: payload.name,
     };
     this.user$.next(user);
   }
@@ -50,7 +52,7 @@ export class AuthService {
   autoLogin(): void {
     if (typeof window === 'undefined') return; // protección SSR
     const token = localStorage.getItem('token');
-    const exp   = localStorage.getItem('expires');
+    const exp = localStorage.getItem('expires');
 
     if (!token || !exp || new Date() >= new Date(exp)) {
       this.logout();

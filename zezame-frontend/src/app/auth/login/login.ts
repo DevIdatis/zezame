@@ -16,8 +16,8 @@ export class Login {
   private router = inject(Router);
 
   form = this.fb.group({
-    email:    ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required]
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required],
   });
 
   error = '';
@@ -27,7 +27,7 @@ export class Login {
 
     this.auth.login(this.form.value as LoginRequest).subscribe({
       next: () => this.router.navigate(['/dashboard']),
-      error: e => this.error = e.error || 'Credenciales inválidas'
+      error: (e) => (this.error = e.error || 'Credenciales inválidas'),
     });
   }
 }
