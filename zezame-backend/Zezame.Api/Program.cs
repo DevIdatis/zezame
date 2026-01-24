@@ -11,10 +11,13 @@ using Zezame.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCors(o => o.AddPolicy("AllowAll", p => p
-    .AllowAnyOrigin()
+var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:4200";
+
+builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", p => p
+    .WithOrigins(frontendUrl) // Origen específico, no wildcard
     .AllowAnyMethod()
-    .AllowAnyHeader()));
+    .AllowAnyHeader()
+    .AllowCredentials()));
 
 builder.Services.AddControllers();
 
@@ -32,6 +35,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+        // Configurar JWT para SignalR
+        opts.Events = new JwtBearerEvents {
+            OnMessageReceived = context => {
+                var accessToken = context.Request.Query["access_token"];
+
+                // Si el request es para SignalR hub
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/timeHub")) {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -56,7 +73,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
+app.UseCors("CorsPolicy");
 app.MapHub<TimeHub>("/timeHub");
 app.UseHttpsRedirection();
 app.MapControllers();
