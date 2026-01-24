@@ -16,3 +16,12 @@ export interface User {
   email: string;
   fullName: string;
 }
+
+export interface TimeEntry {
+  id: string;
+  userId: string;
+  startTime: string; // ISO string desde .NET
+  endTime: string | null;
+  durationMin: number | null;
+  description: string | null;
+}

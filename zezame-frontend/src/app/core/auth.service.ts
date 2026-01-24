@@ -1,19 +1,29 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, map, Observable, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, take, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { LoginRequest, RegisterRequest, TokenResponse, User } from './models';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly api = environment.apiUrl;
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
 
   private user$ = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.user$.asObservable();
-  public isLoggedIn$ = this.user$.pipe(map((u) => !!u));
+  private initialized$ = new BehaviorSubject<boolean>(false);
+
+  // En AuthService, modifica:
+  public isLoggedIn$ = this.user$.pipe(map((user) => !!user));
+
+  constructor() {
+    this.autoLogin();
+  }
 
   private loading$ = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.loading$.asObservable();
@@ -57,19 +67,35 @@ export class AuthService {
   }
 
   autoLogin(): void {
-    if (typeof window === 'undefined') return; // protección SSR
-    const token = localStorage.getItem('token');
-    const exp = localStorage.getItem('expires');
+    console.log('autoLogin iniciado. ¿Es cliente?:', this.isBrowser);
 
-    if (!token || !exp || new Date() >= new Date(exp)) {
-      this.logout();
+    if (!this.isBrowser) {
+      console.log('SSR: Saltando autoLogin');
+      // En SSR, inicializamos inmediatamente pero sin usuario
+      this.user$.next(null);
+      this.initialized$.next(true);
       return;
     }
 
-    this.handleAuth({ token, expires: exp });
+    // Solo en el cliente (browser)
+    const token = localStorage.getItem('token');
+    const exp = localStorage.getItem('expires');
+
+    console.log('Cliente - Token encontrado:', !!token);
+    console.log('Cliente - Expiración:', exp);
+
+    if (!token || !exp || new Date() >= new Date(exp)) {
+      console.log('Token inválido o expirado');
+      this.user$.next(null);
+    } else {
+      console.log('Token válido, autenticando');
+      this.handleAuth({ token, expires: exp });
+    }
+
+    this.initialized$.next(true);
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.isBrowser ? localStorage.getItem('token') : null;
   }
 }

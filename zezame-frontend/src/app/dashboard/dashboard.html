@@ -1,1 +1,64 @@
-<p>dashboard works!</p>
+<nav class="bg-white border-b px-6 py-3 flex justify-between items-center">
+  <span class="text-xl font-semibold">Sesame Clone</span>
+  <button (click)="auth.logout()" class="text-sm text-red-600 hover:underline">
+    Cerrar sesión
+  </button>
+</nav>
+
+<div class="max-w-5xl mx-auto p-6">
+  <!-- Tarjeta del contador -->
+  <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-gray-500">Tiempo de hoy</p>
+        <p class="text-3xl font-bold text-gray-900">{{ format(elapsed()) }}</p>
+      </div>
+      <div class="space-x-3">
+        @if (!(running$ | async)) {
+          <button
+            (click)="start()"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+          >
+            Empezar
+          </button>
+        } @else {
+          <button
+            (click)="stop()"
+            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+          >
+            Finalizar
+          </button>
+        }
+      </div>
+    </div>
+    <p class="mt-2 text-sm text-gray-500">Total acumulado hoy: {{ totalDay() }}</p>
+  </div>
+
+  <!-- Lista de entradas -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="w-full text-sm text-left text-gray-700">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-3">Inicio</th>
+          <th class="px-4 py-3">Fin</th>
+          <th class="px-4 py-3">Duración</th>
+          <th class="px-4 py-3">Descripción</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of entries$ | async; track e.id) {
+          <tr class="border-b">
+            <td class="px-4 py-2">{{ e.startTime | date: 'HH:mm' }}</td>
+            <td class="px-4 py-2">
+              {{ e.endTime ? (e.endTime | date: 'HH:mm') : '-' }}
+            </td>
+            <td class="px-4 py-2">
+              {{ e.durationMin ? e.durationMin + ' min' : '-' }}
+            </td>
+            <td class="px-4 py-2">{{ e.description || '-' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
