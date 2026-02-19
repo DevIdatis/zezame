@@ -1,4 +1,5 @@
 ﻿namespace Zezame.Domain.Entities {
+    public enum EntryType { Work, Break, Lunch }
     public class TimeEntry {
         public Guid Id { get; set; }
 
@@ -15,6 +16,8 @@
         public DateTime CreatedAt { get; set; }
 
         public DateTime UpdatedAt { get; set; }
+
+        public EntryType Type { get; set; } = EntryType.Work;
 
         public User User { get; set; } = null!;
     }

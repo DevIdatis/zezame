@@ -26,7 +26,7 @@ namespace Zezame.Api.Services {
             };
 
             await _repo.AddAsync(entry);
-
+            entry.Type = EntryType.Work;
             // Notifica a los clientes conectados
             await _hub.Clients.User(userId.ToString())
                       .SendAsync("TimerStarted", entry.Id, entry.StartTime);
@@ -51,10 +51,54 @@ namespace Zezame.Api.Services {
             return ToVm(entry);
         }
 
+        public async Task<EntryVm> PauseAsync(Guid userId) {
+            // 1. Cerrar entrada de trabajo activa
+            var workEntry = await _repo.GetRunningAsync(userId, EntryType.Work) ?? throw new Exception("No hay trabajo activo para pausar");
+            workEntry.EndTime = DateTime.UtcNow;
+            workEntry.DurationMin = (int)(workEntry.EndTime.Value - workEntry.StartTime).TotalMinutes;
+            await _repo.UpdateAsync(workEntry);
+
+            // 2. Iniciar automáticamente entrada de pausa
+            var breakEntry = new TimeEntry {
+                UserId = userId,
+                StartTime = DateTime.UtcNow,
+                Type = EntryType.Break,
+                Description = "Pausa automática",
+                CreatedAt = DateTime.UtcNow
+            };
+            await _repo.AddAsync(breakEntry);
+
+            await _hub.Clients.User(userId.ToString()).SendAsync("TimerPaused", ToVm(workEntry), ToVm(breakEntry));
+            return ToVm(breakEntry);
+        }
+
+        public async Task<EntryVm> ResumeAsync(Guid userId) {
+            // 1. Cerrar pausa activa
+            var breakEntry = await _repo.GetRunningAsync(userId, EntryType.Break);
+            if (breakEntry == null) throw new Exception("No hay pausa activa");
+
+            breakEntry.EndTime = DateTime.UtcNow;
+            breakEntry.DurationMin = (int)(breakEntry.EndTime.Value - breakEntry.StartTime).TotalMinutes;
+            await _repo.UpdateAsync(breakEntry);
+
+            // 2. Iniciar automáticamente trabajo
+            var workEntry = new TimeEntry {
+                UserId = userId,
+                StartTime = DateTime.UtcNow,
+                Type = EntryType.Work,
+                Description = "Trabajo reanudado",
+                CreatedAt = DateTime.UtcNow
+            };
+            await _repo.AddAsync(workEntry);
+
+            await _hub.Clients.User(userId.ToString()).SendAsync("TimerResumed", ToVm(breakEntry), ToVm(workEntry));
+            return ToVm(workEntry);
+        }
+
         public async Task<IReadOnlyList<EntryVm>> ListAsync(Guid userId, DateTime from, DateTime to)
             => (await _repo.ListAsync(userId, from, to)).Select(ToVm).ToList();
 
         private static EntryVm ToVm(TimeEntry e)
-            => new(e.Id, e.StartTime, e.EndTime, e.DurationMin, e.Description);
+            => new(e.Id, e.StartTime, e.EndTime, e.DurationMin, e.Description, e.Type);
     }
 }

@@ -27,6 +27,14 @@ namespace Zezame.Api.Controllers {
         public async Task<ActionResult<EntryVm>> Stop(StopEntryDto dto)
             => Ok(await _svc.StopAsync(UserGuid(), dto));
 
+        [HttpPost("pause")]
+        public async Task<ActionResult<EntryVm>> Pause()
+            => Ok(await _svc.PauseAsync(UserGuid()));
+
+        [HttpPost("resume")]
+        public async Task<ActionResult<EntryVm>> Resume()
+            => Ok(await _svc.ResumeAsync(UserGuid()));
+
         private Guid UserGuid() {
             var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (claim == null)

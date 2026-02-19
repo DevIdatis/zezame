@@ -12,9 +12,9 @@ namespace Zezame.Infrastructure.Repositories {
             _db = db;
         }
 
-        public Task<TimeEntry?> GetRunningAsync(Guid userId, CancellationToken ct = default) {
+        public Task<TimeEntry?> GetRunningAsync(Guid userId, EntryType type = EntryType.Work, CancellationToken ct = default) {
             return _db.TimeEntries
-                      .FirstOrDefaultAsync(x => x.UserId == userId && !x.EndTime.HasValue, ct);
+                      .FirstOrDefaultAsync(x => x.UserId == userId && x.Type == type && !x.EndTime.HasValue, ct);
         }
 
         public async Task AddAsync(TimeEntry entry, CancellationToken ct = default) {
