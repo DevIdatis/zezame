@@ -1,64 +1,195 @@
-<nav class="bg-white border-b px-6 py-3 flex justify-between items-center">
-  <span class="text-xl font-semibold">Sesame Clone</span>
-  <button (click)="auth.logout()" class="text-sm text-red-600 hover:underline">
-    Cerrar sesión
-  </button>
-</nav>
-
-<div class="max-w-5xl mx-auto p-6">
-  <!-- Tarjeta del contador -->
-  <div class="bg-white rounded-lg shadow p-6 mb-6">
+<div class="min-h-screen bg-gradient-to-br from-background via-background to-coral/15">
+  <!-- Mobile Header -->
+  <header
+    class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 px-4 py-3"
+  >
     <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm text-gray-500">Tiempo de hoy</p>
-        <p class="text-3xl font-bold text-gray-900">{{ format(elapsed()) }}</p>
+      <div class="flex items-center gap-3">
+        <div
+          class="w-9 h-9 bg-gradient-to-br from-coral via-yellow to-cyan rounded-xl flex items-center justify-center shadow-lg"
+        >
+          <lucide-icon [img]="icons.Clock" class="w-5 h-5 text-white"></lucide-icon>
+        </div>
+        <span
+          class="text-xl font-display font-bold bg-gradient-to-r from-coral via-yellow to-cyan bg-clip-text text-transparent"
+        >
+          Zezame
+        </span>
       </div>
-      <div class="space-x-3">
-        @if (!(running$ | async)) {
-          <button
-            (click)="start()"
-            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-          >
-            Empezar
-          </button>
+      <button class="p-2 hover:bg-muted rounded-lg transition-colors" (click)="toggleMobileMenu()">
+        @if (mobileMenuOpen()) {
+          <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
         } @else {
+          <lucide-icon [img]="icons.Menu" class="w-5 h-5"></lucide-icon>
+        }
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Menu -->
+  @if (mobileMenuOpen()) {
+    <div
+      class="lg:hidden fixed inset-0 z-40 bg-background/95 backdrop-blur-xl pt-16 animate-fade-in"
+    >
+      <nav class="p-4 space-y-2">
+        @for (item of navItems; track item.path) {
           <button
-            (click)="stop()"
-            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+            (click)="navigate(item.path)"
+            class="w-full flex items-center gap-3 px-4 py-4 rounded-xl transition-all duration-300"
+            [class]="
+              isActive(item.path)
+                ? 'bg-gradient-to-r from-coral/20 to-yellow/10 text-coral border border-coral/20'
+                : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+            "
           >
-            Finalizar
+            <lucide-icon [img]="item.icon" class="w-5 h-5" [class.text-coral]="isActive(item.path)">
+            </lucide-icon>
+            <span class="font-medium">{{ item.label }}</span>
+            @if (item.badge) {
+              <span
+                class="ml-auto bg-coral/20 text-coral text-xs font-semibold px-2 py-0.5 rounded-full"
+              >
+                {{ item.badge }}
+              </span>
+            }
           </button>
         }
-      </div>
+        <div class="pt-4 border-t border-border/50">
+          <button
+            class="w-full flex items-center px-4 py-3 text-muted-foreground hover:text-coral transition-colors"
+            (click)="logout()"
+          >
+            <lucide-icon [img]="icons.LogOut" class="w-4 h-4 mr-2"></lucide-icon>
+            Cerrar sesión
+          </button>
+        </div>
+      </nav>
     </div>
-    <p class="mt-2 text-sm text-gray-500">Total acumulado hoy: {{ totalDay() }}</p>
-  </div>
+  }
 
-  <!-- Lista de entradas -->
-  <div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="w-full text-sm text-left text-gray-700">
-      <thead class="bg-gray-100">
-        <tr>
-          <th class="px-4 py-3">Inicio</th>
-          <th class="px-4 py-3">Fin</th>
-          <th class="px-4 py-3">Duración</th>
-          <th class="px-4 py-3">Descripción</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (e of entries$ | async; track e.id) {
-          <tr class="border-b">
-            <td class="px-4 py-2">{{ e.startTime | date: 'HH:mm' }}</td>
-            <td class="px-4 py-2">
-              {{ e.endTime ? (e.endTime | date: 'HH:mm') : '-' }}
-            </td>
-            <td class="px-4 py-2">
-              {{ e.durationMin ? e.durationMin + ' min' : '-' }}
-            </td>
-            <td class="px-4 py-2">{{ e.description || '-' }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+  <!-- Desktop Sidebar -->
+  <aside
+    class="fixed left-0 top-0 bottom-0 w-72 bg-coral/5 backdrop-blur-xl border-r border-border p-6 hidden lg:flex flex-col"
+  >
+    <!-- Logo -->
+    <div class="flex items-center justify-center gap-3 mb-10">
+      <div
+        class="w-11 h-11 bg-gradient-to-br from-coral via-yellow to-cyan rounded-xl flex items-center justify-center shadow-lg"
+      >
+        <lucide-icon [img]="icons.Clock" class="w-6 h-6 text-white"></lucide-icon>
+      </div>
+      <span
+        class="text-3xl font-display font-bold bg-gradient-to-r from-coral via-yellow to-cyan bg-clip-text text-transparent"
+      >
+        Zezame
+      </span>
+    </div>
+
+    <!-- Nav items -->
+    <nav class="space-y-2 flex-1">
+      @for (item of navItems; track item.path) {
+        <button
+          (click)="navigate(item.path)"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group"
+          [class]="
+            isActive(item.path)
+              ? 'bg-gradient-to-r from-coral/20 to-yellow/10 text-coral border border-coral/20'
+              : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+          "
+        >
+          <lucide-icon
+            [img]="item.icon"
+            class="w-5 h-5 transition-colors"
+            [class.text-coral]="isActive(item.path)"
+            [class.group-hover:text-coral]="!isActive(item.path)"
+          >
+          </lucide-icon>
+          <span class="font-medium">{{ item.label }}</span>
+          @if (item.badge) {
+            <span
+              class="ml-auto bg-coral/20 text-coral text-xs font-semibold px-2 py-0.5 rounded-full"
+            >
+              {{ item.badge }}
+            </span>
+          }
+        </button>
+      }
+    </nav>
+
+    <!-- User card -->
+    <div class="mt-auto">
+      <div
+        class="p-4 rounded-2xl bg-gradient-to-br from-coral/30 via-yellow/15 to-cyan/30 border border-border/50"
+      >
+        <div class="flex items-center gap-3 mb-3">
+          <img
+            [src]="user.avatar"
+            [alt]="user.name"
+            class="w-12 h-12 rounded-xl border-2 border-coral/30"
+          />
+          <div>
+            <p class="font-semibold text-foreground">{{ user.name }}</p>
+            <p class="text-xs text-muted-foreground">{{ user.level }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-sm">
+          <lucide-icon [img]="icons.Flame" class="w-4 h-4 text-coral"></lucide-icon>
+          <span class="text-coral font-semibold">{{ user.streak }} días de racha</span>
+          <span class="text-xl">🔥</span>
+        </div>
+      </div>
+
+      <button
+        class="w-full mt-3 flex items-center justify-center px-4 py-2 text-white bg-coral/65 hover:bg-coral/90 transition-colors rounded-lg"
+        (click)="logout()"
+      >
+        <lucide-icon [img]="icons.LogOut" class="w-4 h-4 mr-2"></lucide-icon>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="lg:ml-72 p-6 lg:p-8 pt-20 lg:pt-8">
+    <!-- Top bar -->
+    <header
+      class="hidden lg:flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"
+    >
+      <div>
+        <h1 class="text-3xl font-display font-bold text-foreground">
+          ¡Hola, {{ firstName() }}! 👋
+        </h1>
+        <p class="text-muted-foreground mt-1">Llevas una semana increíble, ¡sigue así! 💪</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <lucide-icon
+            [img]="icons.Search"
+            class="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+          ></lucide-icon>
+          <input
+            type="text"
+            placeholder="Buscar..."
+            class="pl-10 w-48 rounded-xl border border-border/50 bg-card/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50"
+          />
+        </div>
+        <button class="relative p-2 hover:bg-muted rounded-lg transition-colors">
+          <lucide-icon [img]="icons.Bell" class="w-5 h-5"></lucide-icon>
+          <span
+            class="absolute -top-1 -right-1 w-4 h-4 bg-coral text-white text-xs rounded-full flex items-center justify-center"
+          >
+            3
+          </span>
+        </button>
+        <img
+          [src]="user.avatar"
+          [alt]="user.name"
+          class="w-10 h-10 rounded-xl border-2 border-coral/30 cursor-pointer hover:scale-105 transition-transform"
+        />
+      </div>
+    </header>
+
+    <router-outlet></router-outlet>
+  </main>
 </div>

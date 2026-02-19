@@ -1,55 +1,98 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap, shareReplay } from 'rxjs';
 import { TimeEntry } from './models';
 import { SignalRService } from './signalR.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class TimeService {
   private http = inject(HttpClient);
   private hub = inject(SignalRService);
   private api = environment.apiUrl;
 
-  private running$ = new BehaviorSubject<TimeEntry | null>(null);
-  public current$ = this.running$.asObservable();
+  private listCache = new Map<string, Observable<TimeEntry[]>>();
+
+  // ✅ ÚNICA fuente de verdad
+  private currentSubject = new BehaviorSubject<TimeEntry | null>(null);
+  current$ = this.currentSubject.asObservable();
 
   constructor() {
-    this.loadRunning();
-
-    this.hub.onTimerStarted(() => this.loadRunning());
-    this.hub.onTimerStopped(() => this.running$.next(null));
+    this.syncCurrent();
+    this.hub.onTimerStarted(() => this.syncCurrent());
+    this.hub.onTimerPaused(() => this.syncCurrent());
+    this.hub.onTimerResumed(() => this.syncCurrent());
+    this.hub.onTimerStopped(() => this.currentSubject.next(null));
   }
 
-  private loadRunning(): void {
+  // ===============================
+  // SYNC
+  // ===============================
+
+  private syncCurrent(): void {
     const { from, to } = this.todayRange();
-    this.list(from, to).subscribe((list) => {
-      const active = list.find((e) => !e.endTime) ?? null;
-      this.running$.next(active);
-    });
-  }
 
-  list(from: Date, to: Date): Observable<TimeEntry[]> {
     const params = new HttpParams().set('from', from.toISOString()).set('to', to.toISOString());
 
-    return this.http.get<TimeEntry[]>(`${this.api}/timeEntries`, { params });
-  }
-
-  start(desc?: string) {
-    return this.http.post<void>(`${this.api}/timeEntries/start`, {
-      description: desc,
+    this.http.get<TimeEntry[]>(`${this.api}/timeEntries`, { params }).subscribe((list) => {
+      const active = list.find((e) => !e.endTime) ?? null;
+      this.currentSubject.next(active);
     });
   }
 
-  stop() {
-    const id = this.running$.value?.id;
+  // ===============================
+  // API
+  // ===============================
+
+  list(from: Date, to: Date): Observable<TimeEntry[]> {
+    const key = `${from.toISOString()}_${to.toISOString()}`;
+
+    if (!this.listCache.has(key)) {
+      const params = new HttpParams().set('from', from.toISOString()).set('to', to.toISOString());
+
+      this.listCache.set(
+        key,
+        this.http.get<TimeEntry[]>(`${this.api}/timeEntries`, { params }).pipe(shareReplay(1)),
+      );
+    }
+
+    return this.listCache.get(key)!;
+  }
+
+  start(description?: string): Observable<void> {
+    this.invalidateTodayCache();
+    return this.http
+      .post<void>(`${this.api}/timeEntries/start`, { description })
+      .pipe(tap(() => this.syncCurrent()));
+  }
+
+  pause(): Observable<TimeEntry> {
+    this.invalidateTodayCache();
+    return this.http
+      .post<TimeEntry>(`${this.api}/timeEntries/pause`, {})
+      .pipe(tap((entry) => this.currentSubject.next(entry)));
+  }
+
+  resume(): Observable<TimeEntry> {
+    this.invalidateTodayCache();
+    return this.http
+      .post<TimeEntry>(`${this.api}/timeEntries/resume`, {})
+      .pipe(tap((entry) => this.currentSubject.next(entry)));
+  }
+
+  stop(): Observable<void> {
+    this.invalidateTodayCache();
+    const id = this.currentSubject.value?.id;
     if (!id) throw new Error('No hay entrada activa');
 
-    return this.http.patch<void>(`${this.api}/timeEntries/stop`, { id });
+    return this.http
+      .patch<void>(`${this.api}/timeEntries/stop`, { id })
+      .pipe(tap(() => this.currentSubject.next(null)));
   }
+
+  // ===============================
+  // HELPERS
+  // ===============================
 
   private todayRange() {
     const from = new Date();
@@ -59,5 +102,11 @@ export class TimeService {
     to.setHours(23, 59, 59, 999);
 
     return { from, to };
+  }
+
+  private invalidateTodayCache() {
+    const { from, to } = this.todayRange();
+    const key = `${from.toISOString()}_${to.toISOString()}`;
+    this.listCache.delete(key);
   }
 }

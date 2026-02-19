@@ -24,4 +24,11 @@ export interface TimeEntry {
   endTime: string | null;
   durationMin: number | null;
   description: string | null;
+  type: number;
+}
+
+export enum EntryType {
+  Work = 0,
+  Break = 1,
+  Lunch = 2,
 }

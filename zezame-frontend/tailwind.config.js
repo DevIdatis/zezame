@@ -4,6 +4,18 @@ module.exports = {
   content: [
     './src/**/*.{html,ts}',
   ],
+  safelist: [
+    'bg-gradient-to-br',
+    'from-coral',
+    'to-yellow',
+    'from-yellow-500',
+    'to-orange-500',
+    'from-green-500',
+    'to-emerald-500',
+    'hover:shadow-yellow/30',
+    'hover:shadow-orange/30',
+    'hover:shadow-green/30',
+  ],
   prefix: '',
   theme: {
     container: {
