@@ -1,8 +1,10 @@
 ﻿using Zezame.Domain.Entities;
+using static Zezame.Domain.Entities.User;
 
 namespace Zezame.Domain.Interfaces {
-    public interface IUserRepository {
-        Task<User?> GetByEmailAsync(string email, CancellationToken ct = default);
-        Task AddAsync(User user, CancellationToken ct = default);
+    public interface IUserRepository : IRepository<User> {
+        Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByIdWithProjectsAsync(Guid id);
+        Task<IEnumerable<User>> GetByRoleAsync(UserRole role);
     }
 }

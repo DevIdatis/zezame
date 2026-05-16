@@ -5,36 +5,37 @@ using System.Text;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
 using static Zezame.Api.Models.AuthDtos;
+using static Zezame.Domain.Entities.User;
 
 namespace Zezame.Api.Services {
-    public class AuthService {
-        private readonly IUserRepository _users;
-        private readonly IConfiguration _cfg;
+    public class AuthService(IUserRepository users, IConfiguration cfg) {
+        private readonly IUserRepository _users = users;
+        private readonly IConfiguration _cfg = cfg;
 
-        public AuthService(IUserRepository users, IConfiguration cfg) {
-            _users = users;
-            _cfg = cfg;
-        }
-
-        // REGISTER
         public async Task<TokenDto> RegisterAsync(RegisterDto dto) {
             var email = dto.Email.ToLower();
 
             if (await _users.GetByEmailAsync(email) != null)
                 throw new InvalidOperationException("Email ya registrado");
 
+            // Solo Admin puede crear Coordinadores o Admins
+            //var assignedRole = UserRole.User;
+            //if (dto.Role.HasValue && creatorRole == UserRole.Admin) {
+            var assignedRole = dto.Role!.Value;
+            //}
+
             var user = new User {
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 FullName = dto.FullName,
-                CreatedAt = DateTime.UtcNow
+                Role = assignedRole,
+                CreatedAt = DateTime.UtcNow,
             };
 
             await _users.AddAsync(user);
             return GenerateToken(user);
         }
 
-        // LOGIN
         public async Task<TokenDto> LoginAsync(LoginDto dto) {
             var email = dto.Email.ToLower();
             var user = await _users.GetByEmailAsync(email);
@@ -45,7 +46,6 @@ namespace Zezame.Api.Services {
             return GenerateToken(user);
         }
 
-        // JWT
         private TokenDto GenerateToken(User user) {
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_cfg["Jwt:Key"]!));
@@ -55,7 +55,9 @@ namespace Zezame.Api.Services {
             var claims = new[] {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Name, user.FullName)
+                new Claim(JwtRegisteredClaimNames.Name, user.FullName),
+                new Claim(ClaimTypes.Role, user.Role.ToString()), // ROL EN JWT
+                new Claim("role", ((int)user.Role).ToString()) // Para fácil parsing en frontend
             };
 
             var expires = DateTime.UtcNow.AddMinutes(
@@ -68,9 +70,12 @@ namespace Zezame.Api.Services {
                 expires: expires,
                 signingCredentials: creds);
 
+            var userDto = new UserDto(user.Id, user.Email, user.FullName, user.Role.ToString());
+
             return new TokenDto(
                 new JwtSecurityTokenHandler().WriteToken(token),
-                expires
+                expires,
+                userDto
             );
         }
     }

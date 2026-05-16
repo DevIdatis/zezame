@@ -2,22 +2,23 @@
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
 using Zezame.Infrastructure.Persistence;
+using static Zezame.Domain.Entities.User;
 
 namespace Zezame.Infrastructure.Repositories {
-    public class UserRepository : IUserRepository {
-        private readonly ZezameDbContext _db;
+    public class UserRepository(ZezameDbContext db) : Repository<User>(db), IUserRepository {
+        public async Task<User?> GetByEmailAsync(string email)
+        => await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower() && !u.IsDeleted);
 
-        public UserRepository(ZezameDbContext db) {
-            _db = db;
-        }
+        public async Task<User?> GetByIdWithProjectsAsync(Guid id)
+            => await _dbSet
+                .Include(u => u.OwnedProjects)
+                .Include(u => u.ProjectMemberships)
+                .ThenInclude(pm => pm.Project)
+                .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
 
-        public Task<User?> GetByEmailAsync(string email, CancellationToken ct = default) {
-            return _db.Users.FirstOrDefaultAsync(u => u.Email == email, ct);
-        }
-
-        public async Task AddAsync(User user, CancellationToken ct = default) {
-            _db.Users.Add(user);
-            await _db.SaveChangesAsync(ct);
-        }
+        public async Task<IEnumerable<User>> GetByRoleAsync(UserRole role)
+            => await _dbSet.Where(u => u.Role == role && !u.IsDeleted).ToListAsync();
     }
 }
