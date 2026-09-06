@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterOutlet } from '@angular/router';
 import {
   LucideAngularModule,
@@ -17,6 +17,7 @@ import {
   LucideIconData,
 } from 'lucide-angular';
 import { AuthService } from '../core/auth.service';
+import { User } from '../core/models';
 
 interface NavItem {
   icon: LucideIconData;
@@ -50,7 +51,13 @@ export class Dashboard {
   mobileMenuOpen = signal(false);
 
   // Usuario autenticado (fuente real)
-  private currentUser = toSignal(this.auth.currentUser$, { initialValue: null });
+  private currentUser = signal<User | null>(null);
+
+  constructor() {
+    this.auth.currentUser$
+      .pipe(takeUntilDestroyed())
+      .subscribe((u) => this.currentUser.set(u));
+  }
 
   // Placeholders cosméticos (aún sin lógica de negocio: racha/nivel)
   private readonly placeholderStreak = 12;

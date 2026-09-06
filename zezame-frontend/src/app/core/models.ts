@@ -32,3 +32,39 @@ export enum EntryType {
   Break = 1,
   Lunch = 2,
 }
+
+// Coincide con ProjectDto del backend
+export interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  color: string;
+  emoji: string | null;
+  status: string; // 'Active' | 'Paused' | 'Completed'
+  deadline: string | null;
+  hours: number;
+  progress: number;
+  memberCount: number;
+  tasksCompleted: number;
+  tasksTotal: number;
+  ownerId: string;
+  ownerName: string;
+  createdAt: string;
+}
+
+export interface CreateProjectRequest {
+  name: string;
+  description?: string | null;
+  color?: string | null;
+  emoji?: string | null;
+  deadline?: string | null;
+}
+
+export interface UpdateProjectRequest {
+  name?: string | null;
+  description?: string | null;
+  color?: string | null;
+  emoji?: string | null;
+  deadline?: string | null;
+  status?: string | null;
+}

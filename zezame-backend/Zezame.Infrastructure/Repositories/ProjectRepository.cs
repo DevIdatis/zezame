@@ -29,5 +29,29 @@ namespace Zezame.Infrastructure.Repositories {
         public async Task<bool> IsMemberAsync(Guid projectId, Guid userId)
             => await _context.ProjectMembers
                 .AnyAsync(pm => pm.ProjectId == projectId && pm.UserId == userId);
+
+        public async Task<IEnumerable<Project>> GetAllWithStatsAsync(Guid userId, ProjectStatus? status = null) {
+            var query = _dbSet
+                .Where(p => !p.IsDeleted &&
+                       (p.OwnerId == userId || p.Members.Any(m => m.UserId == userId)))
+                .Include(p => p.Owner)
+                .Include(p => p.Members)
+                .Include(p => p.Activities)
+                .Include(p => p.TimeEntries)
+                .AsQueryable();
+
+            if (status.HasValue)
+                query = query.Where(p => p.Status == status.Value);
+
+            return await query
+                .AsNoTracking()
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task AddMemberAsync(ProjectMember member) {
+            await _context.ProjectMembers.AddAsync(member);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -102,9 +102,17 @@ namespace Zezame.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdat");
 
+                    b.Property<DateTime?>("Deadline")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deadline");
+
                     b.Property<string>("Description")
                         .HasColumnType("text")
                         .HasColumnName("description");
+
+                    b.Property<string>("Emoji")
+                        .HasColumnType("text")
+                        .HasColumnName("emoji");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -118,6 +126,10 @@ namespace Zezame.Infrastructure.Migrations
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid")
                         .HasColumnName("ownerid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

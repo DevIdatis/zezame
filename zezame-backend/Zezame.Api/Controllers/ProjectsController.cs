@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Zezame.Api.Models.DTOs;
 using Zezame.Api.Services.Interfaces;
+using Zezame.Domain.Entities;
 
 namespace Zezame.Api.Controllers {
     [ApiController]
@@ -9,11 +10,29 @@ namespace Zezame.Api.Controllers {
     [Authorize]
     public class ProjectsController : ControllerBase {
         private readonly IProjectService _projectService;
-        private readonly IHttpContextAccessor _httpContext;
 
-        public ProjectsController(IProjectService projectService, IHttpContextAccessor httpContext) {
+        public ProjectsController(IProjectService projectService) {
             _projectService = projectService;
-            _httpContext = httpContext;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ProjectDto>>> List([FromQuery] string? status) {
+            var userId = GetCurrentUserId();
+            ProjectStatus? parsed = null;
+            if (!string.IsNullOrWhiteSpace(status) &&
+                !status.Equals("all", StringComparison.OrdinalIgnoreCase) &&
+                Enum.TryParse<ProjectStatus>(status, true, out var st)) {
+                parsed = st;
+            }
+
+            var projects = await _projectService.GetProjectsAsync(userId, parsed);
+            return Ok(projects);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ProjectDto>> GetById(Guid id) {
+            var project = await _projectService.GetByIdAsync(id);
+            return project == null ? NotFound() : Ok(project);
         }
 
         [HttpPost]
@@ -24,11 +43,20 @@ namespace Zezame.Api.Controllers {
             return Ok(project);
         }
 
-        [HttpGet("my")]
-        public async Task<ActionResult<IEnumerable<ProjectDto>>> GetMyProjects() {
+        [HttpPut("{id}")]
+        [Authorize(Policy = "RequireCoordinator")]
+        public async Task<ActionResult<ProjectDto>> Update(Guid id, UpdateProjectDto dto) {
             var userId = GetCurrentUserId();
-            var projects = await _projectService.GetUserProjectsAsync(userId);
-            return Ok(projects);
+            var project = await _projectService.UpdateAsync(id, userId, dto);
+            return Ok(project);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Policy = "RequireCoordinator")]
+        public async Task<IActionResult> Delete(Guid id) {
+            var userId = GetCurrentUserId();
+            await _projectService.DeleteAsync(id, userId);
+            return NoContent();
         }
 
         [HttpPost("{projectId}/members/{userId}")]
@@ -47,5 +75,4 @@ namespace Zezame.Api.Controllers {
             return Guid.Parse(claim.Value);
         }
     }
-
 }

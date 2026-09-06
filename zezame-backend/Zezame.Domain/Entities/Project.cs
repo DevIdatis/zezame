@@ -1,11 +1,20 @@
 ﻿using Zezame.Domain.Base;
 
 namespace Zezame.Domain.Entities {
+    public enum ProjectStatus {
+        Active,
+        Paused,
+        Completed
+    }
+
     public class Project : BaseEntity {
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public string Color { get; set; } = "from-coral to-yellow"; // Tailwind class
-        public int? ClientId { get; set; } 
+        public string? Emoji { get; set; }
+        public ProjectStatus Status { get; set; } = ProjectStatus.Active;
+        public DateTime? Deadline { get; set; }
+        public int? ClientId { get; set; }
 
         // Relaciones
         public Guid OwnerId { get; set; }

@@ -6,5 +6,9 @@ namespace Zezame.Domain.Interfaces {
         Task<IEnumerable<Project>> GetByOwnerAsync(Guid ownerId);
         Task<Project?> GetByIdWithMembersAsync(Guid id);
         Task<bool> IsMemberAsync(Guid projectId, Guid userId);
+
+        // Proyectos del usuario (propios o como miembro) con navegaciones para calcular stats
+        Task<IEnumerable<Project>> GetAllWithStatsAsync(Guid userId, ProjectStatus? status = null);
+        Task AddMemberAsync(ProjectMember member);
     }
 }

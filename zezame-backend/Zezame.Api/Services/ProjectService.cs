@@ -1,4 +1,5 @@
-﻿using Zezame.Api.Models.DTOs;
+using Zezame.Api.Exceptions;
+using Zezame.Api.Models.DTOs;
 using Zezame.Api.Services.Interfaces;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
@@ -19,55 +20,97 @@ namespace Zezame.Api.Services {
             var project = new Project {
                 Name = dto.Name,
                 Description = dto.Description,
-                Color = dto.Color ?? "#3b82f6",
+                Color = dto.Color ?? "from-coral to-yellow",
+                Emoji = dto.Emoji,
+                Deadline = dto.Deadline,
+                Status = ProjectStatus.Active,
                 OwnerId = coordinatorId
             };
 
             await _projects.AddAsync(project);
 
-            return MapToDto(project);
+            var owner = await _users.GetByIdAsync(coordinatorId);
+            return MapToDto(project, owner?.FullName ?? "Unknown");
         }
 
-        public async Task<IEnumerable<ProjectDto>> GetUserProjectsAsync(Guid userId) {
-            var projects = await _projects.GetByUserAsync(userId);
-            return projects.Select(MapToDto);
+        public async Task<IEnumerable<ProjectDto>> GetProjectsAsync(Guid userId, ProjectStatus? status = null) {
+            var projects = await _projects.GetAllWithStatsAsync(userId, status);
+            return projects.Select(p => MapToDto(p, p.Owner?.FullName ?? "Unknown"));
         }
 
         public async Task<ProjectDto?> GetByIdAsync(Guid id) {
             var project = await _projects.GetByIdWithMembersAsync(id);
-            return project == null ? null : MapToDto(project);
+            return project == null ? null : MapToDto(project, project.Owner?.FullName ?? "Unknown");
+        }
+
+        public async Task<ProjectDto> UpdateAsync(Guid projectId, Guid userId, UpdateProjectDto dto) {
+            await _auth.EnsureCanManageProjectAsync(userId, projectId);
+
+            var project = await _projects.GetByIdWithMembersAsync(projectId)
+                ?? throw new NotFoundException("Proyecto no encontrado");
+
+            if (dto.Name is not null) project.Name = dto.Name;
+            if (dto.Description is not null) project.Description = dto.Description;
+            if (dto.Color is not null) project.Color = dto.Color;
+            if (dto.Emoji is not null) project.Emoji = dto.Emoji;
+            if (dto.Deadline.HasValue) project.Deadline = dto.Deadline;
+            if (dto.Status is not null && Enum.TryParse<ProjectStatus>(dto.Status, true, out var st))
+                project.Status = st;
+
+            await _projects.UpdateAsync(project);
+            return MapToDto(project, project.Owner?.FullName ?? "Unknown");
+        }
+
+        public async Task DeleteAsync(Guid projectId, Guid userId) {
+            await _auth.EnsureCanManageProjectAsync(userId, projectId);
+            await _projects.DeleteAsync(projectId); // soft-delete
         }
 
         public async Task AddMemberAsync(Guid projectId, Guid coordinatorId, Guid userId) {
             await _auth.EnsureCanManageProjectAsync(coordinatorId, projectId);
 
-            var project = await _projects.GetByIdAsync(projectId);
-            if (project == null) throw new Exception("Proyecto no encontrado");
+            var project = await _projects.GetByIdAsync(projectId)
+                ?? throw new NotFoundException("Proyecto no encontrado");
 
-            var user = await _users.GetByIdAsync(userId);
-            if (user == null) throw new Exception("Usuario no encontrado");
+            var user = await _users.GetByIdAsync(userId)
+                ?? throw new NotFoundException("Usuario no encontrado");
 
             if (await _projects.IsMemberAsync(projectId, userId))
                 throw new InvalidOperationException("Usuario ya es miembro");
 
-            var member = new ProjectMember {
+            await _projects.AddMemberAsync(new ProjectMember {
                 ProjectId = projectId,
                 UserId = userId
-            };
-
-            // Agregar mediante contexto o repositorio específico
+            });
         }
 
-        private static ProjectDto MapToDto(Project p) => new(
-            p.Id,
-            p.Name,
-            p.Color,
-            p.Description,
-            p.OwnerId,
-            p.Owner?.FullName ?? "Unknown",
-            p.Members?.Count ?? 0,
-            p.Activities?.Count ?? 0,
-            p.CreatedAt
-        );
+        private static ProjectDto MapToDto(Project p, string ownerName) {
+            var totalMinutes = p.TimeEntries?.Sum(te => te.DurationMin ?? 0) ?? 0;
+            var hours = Math.Round(totalMinutes / 60.0, 1);
+
+            var tasksTotal = p.Activities?.Count ?? 0;
+            var tasksCompleted = p.Activities?.Count(a => a.Status == ActivityStatus.Done) ?? 0;
+            var progress = tasksTotal > 0
+                ? (int)Math.Round((double)tasksCompleted / tasksTotal * 100)
+                : 0;
+
+            return new ProjectDto(
+                p.Id,
+                p.Name,
+                p.Description,
+                p.Color,
+                p.Emoji,
+                p.Status.ToString(),
+                p.Deadline,
+                hours,
+                progress,
+                p.Members?.Count ?? 0,
+                tasksCompleted,
+                tasksTotal,
+                p.OwnerId,
+                ownerName,
+                p.CreatedAt
+            );
+        }
     }
 }
