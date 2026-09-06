@@ -68,3 +68,6 @@ db/backups/
 !.vscode/tasks.json
 *.iml
 .idea/
+
+#Plantilla de paginas
+plantilla-zezame/*

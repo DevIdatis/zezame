@@ -19,7 +19,7 @@ import { AuthService } from '../../../core/auth.service';
 import { BehaviorSubject, distinctUntilChanged, Subject, Subscription, takeUntil } from 'rxjs';
 import { EntryType, TimeEntry } from '../../../core/models';
 import { AsyncPipe } from '@angular/common';
-
+import { BreakdownPeriod, BreakDownDialog } from './components/break-down-dialog/break-down-dialog';
 interface Project {
   id: number;
   name: string;
@@ -41,6 +41,7 @@ interface Stat {
   value: string;
   icon: LucideIconData;
   color: string;
+  period?: BreakdownPeriod;
   emoji: string;
 }
 
@@ -48,7 +49,7 @@ type TimerStatus = 'idle' | 'working' | 'paused';
 
 @Component({
   selector: 'app-timer',
-  imports: [LucideAngularModule, AsyncPipe],
+  imports: [LucideAngularModule, AsyncPipe, BreakDownDialog],
   templateUrl: './timer.html',
   styleUrl: './timer.scss',
 })
@@ -90,6 +91,7 @@ export class Timer implements OnInit, OnDestroy {
   // State signals
   isTimerRunning = signal(false);
   timerTime = signal('00:45:23');
+  breakdownPeriod = signal<BreakdownPeriod | null>(null);
   currentTask = signal('Diseño de componentes UI');
 
   // Mock data
@@ -120,6 +122,7 @@ export class Timer implements OnInit, OnDestroy {
       value: this.todayHours(),
       icon: Clock,
       color: 'coral',
+      period: 'day',
       emoji: '⏱️',
     },
     {
@@ -127,6 +130,7 @@ export class Timer implements OnInit, OnDestroy {
       value: this.weekHours(),
       icon: Calendar,
       color: 'cyan',
+      period: 'week',
       emoji: '📅',
     },
     {
@@ -134,6 +138,7 @@ export class Timer implements OnInit, OnDestroy {
       value: this.monthHours(),
       icon: TrendingUp,
       color: 'yellow',
+      period: 'month',
       emoji: '📈',
     },
     {
@@ -220,6 +225,16 @@ export class Timer implements OnInit, OnDestroy {
       },
       error: (err) => console.error('Error cargando entradas:', err),
     });
+  }
+
+  openBreakdown(period?: BreakdownPeriod) {
+    if (period) {
+      this.breakdownPeriod.set(period);
+    }
+  }
+
+  closeBreakdown() {
+    this.breakdownPeriod.set(null);
   }
 
   private recalculateTodayWork(list: TimeEntry[]): void {

@@ -127,7 +127,8 @@
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
     @for (stat of stats(); track stat.label) {
       <div
-        class="bg-card/80 backdrop-blur-sm border border-border rounded-xl hover:shadow-lg transition-all duration-300 group hover:-translate-y-1"
+        class="bg-card/80 backdrop-blur-sm border cursor-pointer border-border rounded-xl hover:shadow-lg transition-all duration-300 group hover:-translate-y-1"
+        (click)="openBreakdown(stat.period)"
       >
         <div class="p-5">
           <div class="flex items-center justify-between mb-3">
@@ -257,3 +258,8 @@
     </p>
   </div>
 </div>
+<app-break-down-dialog
+  [open]="breakdownPeriod() !== null"
+  [period]="breakdownPeriod()"
+  (openChange)="!$event && closeBreakdown()"
+></app-break-down-dialog>

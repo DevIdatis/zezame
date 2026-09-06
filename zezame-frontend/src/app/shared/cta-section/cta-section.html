@@ -1,0 +1,48 @@
+<section class="py-24 relative overflow-hidden">
+  <!-- Background Blobs -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="blob w-96 h-96 bg-coral top-0 left-1/4 opacity-20"></div>
+    <div class="blob w-80 h-80 bg-cyan bottom-0 right-1/4 opacity-20"></div>
+  </div>
+
+  <div class="container mx-auto px-6 relative z-10">
+    <div class="gradient-bg rounded-3xl p-8 md:p-16 text-center relative overflow-hidden">
+      <!-- Decorative elements -->
+      <div class="absolute top-4 left-4">
+        <lucide-icon [img]="Sparkles" class="w-8 h-8 text-primary-foreground/30"></lucide-icon>
+      </div>
+      <div class="absolute bottom-4 right-4">
+        <lucide-icon [img]="Sparkles" class="w-8 h-8 text-primary-foreground/30"></lucide-icon>
+      </div>
+
+      <h2 class="text-4xl md:text-6xl font-bold font-display text-primary-foreground mb-6">
+        ¿Listo para<br />
+        recuperar tu tiempo?
+      </h2>
+      <p class="text-xl text-primary-foreground/80 mb-10 max-w-xl mx-auto">
+        Únete a miles de equipos que ya disfrutan gestionando sus horas con Zezame.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <button
+          class="bg-card text-foreground px-8 py-4 rounded-xl font-semibold text-lg flex items-center gap-2 hover:scale-105 transition-all shadow-lg group"
+        >
+          Empezar gratis
+          <lucide-icon
+            [img]="ArrowRight"
+            class="w-5 h-5 group-hover:translate-x-1 transition-transform"
+          ></lucide-icon>
+        </button>
+        <button
+          class="text-primary-foreground border-2 border-primary-foreground/30 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-primary-foreground/10 transition-all"
+        >
+          Hablar con ventas
+        </button>
+      </div>
+
+      <p class="text-primary-foreground/60 mt-6 text-sm">
+        Sin tarjeta de crédito · Cancela cuando quieras
+      </p>
+    </div>
+  </div>
+</section>
