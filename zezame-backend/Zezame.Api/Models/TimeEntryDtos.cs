@@ -2,7 +2,12 @@
 
 namespace Zezame.Api.Models {
     public class TimeEntryDtos {
-        public record StartEntryDto(string? Description, EntryType Type = EntryType.Work);
+        public record StartEntryDto(
+            string? Description,
+            Guid? ProjectId = null,
+            Guid? ActivityId = null,
+            EntryType Type = EntryType.Work
+        );
         public record StopEntryDto(Guid Id);
         public record EntryVm(
             Guid Id,

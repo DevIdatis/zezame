@@ -25,17 +25,14 @@
           >
             {{ format(elapsed()) }}
           </div>
-          @if (currentProject()) {
+          @if (currentProject(); as cp) {
             <div class="space-y-2">
               <p class="text-lg text-foreground font-medium">{{ currentTask() }}</p>
               <p
                 class="text-muted-foreground flex items-center justify-center lg:justify-start gap-2"
               >
-                <span
-                  class="w-3 h-3 rounded-full bg-gradient-to-r"
-                  [class]="currentProject().color"
-                ></span>
-                {{ currentProject().name }}
+                <span class="w-3 h-3 rounded-full bg-gradient-to-r" [class]="cp.color"></span>
+                {{ cp.name }}
               </p>
             </div>
           } @else {
@@ -114,6 +111,7 @@
           } -->
 
           <button
+            (click)="openAssign()"
             class="w-14 h-14 rounded-2xl border-2 border-border hover:border-cyan hover:bg-cyan/10 flex items-center justify-center transition-all"
           >
             <lucide-icon [img]="icons.Plus" class="w-5 h-5"></lucide-icon>
@@ -244,22 +242,35 @@
     class="p-6 rounded-2xl bg-gradient-to-r from-cyan/20 via-yellow/40 to-white/50 border border-border text-center"
   >
     <p class="text-lg font-medium text-foreground">
-      🎯 Meta del día: <span class="text-coral font-bold">6 horas</span> - Llevas
-      <span class="text-lime font-bold">4h 32m</span>
+      🎯 Meta del día: <span class="text-coral font-bold">{{ goalHours }} horas</span> - Llevas
+      <span class="text-lime font-bold">{{ workedTodayLabel() }}</span>
     </p>
     <div class="w-full max-w-md mx-auto mt-4 h-3 bg-muted rounded-full overflow-hidden">
       <div
         class="h-full bg-gradient-to-r from-coral via-yellow to-lime rounded-full transition-all duration-1000"
-        style="width: 75%"
+        [style.width.%]="goalProgress()"
       ></div>
     </div>
-    <p class="text-sm text-muted-foreground mt-2">
-      ¡Solo te faltan 1h 28m para alcanzar tu meta! 🚀
-    </p>
+    @if (goalRemainingLabel(); as remaining) {
+      <p class="text-sm text-muted-foreground mt-2">
+        ¡Solo te faltan {{ remaining }} para alcanzar tu meta! 🚀
+      </p>
+    } @else {
+      <p class="text-sm text-muted-foreground mt-2">¡Meta del día alcanzada! 🎉</p>
+    }
   </div>
 </div>
+
 <app-break-down-dialog
   [open]="breakdownPeriod() !== null"
   [period]="breakdownPeriod()"
   (openChange)="!$event && closeBreakdown()"
 ></app-break-down-dialog>
+
+<app-assign-activity-dialog
+  [open]="assignOpen()"
+  [projects]="mockProjects"
+  [initialProjectId]="currentProject()?.id"
+  (openChange)="!$event && closeAssign()"
+  (assign)="onAssign($event)"
+></app-assign-activity-dialog>

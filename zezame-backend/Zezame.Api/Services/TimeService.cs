@@ -21,12 +21,14 @@ namespace Zezame.Api.Services {
                 UserId = userId,
                 StartTime = now,
                 Description = dto.Description,
+                Type = dto.Type,
+                ProjectId = dto.ProjectId,
+                ActivityId = dto.ActivityId,
                 CreatedAt = now,
                 UpdatedAt = now
             };
 
             await _repo.AddAsync(entry);
-            entry.Type = EntryType.Work;
             // Notifica a los clientes conectados
             await _hub.Clients.User(userId.ToString())
                       .SendAsync("TimerStarted", entry.Id, entry.StartTime);

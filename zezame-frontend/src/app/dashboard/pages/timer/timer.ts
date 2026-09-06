@@ -20,6 +20,7 @@ import { BehaviorSubject, distinctUntilChanged, Subject, Subscription, takeUntil
 import { EntryType, TimeEntry } from '../../../core/models';
 import { AsyncPipe } from '@angular/common';
 import { BreakdownPeriod, BreakDownDialog } from './components/break-down-dialog/break-down-dialog';
+import { AssignActivityDialog } from './components/assign-activity-dialog/assign-activity-dialog';
 interface Project {
   id: number;
   name: string;
@@ -49,7 +50,7 @@ type TimerStatus = 'idle' | 'working' | 'paused';
 
 @Component({
   selector: 'app-timer',
-  imports: [LucideAngularModule, AsyncPipe, BreakDownDialog],
+  imports: [LucideAngularModule, BreakDownDialog, AssignActivityDialog],
   templateUrl: './timer.html',
   styleUrl: './timer.scss',
 })
@@ -93,20 +94,33 @@ export class Timer implements OnInit, OnDestroy {
   timerTime = signal('00:45:23');
   breakdownPeriod = signal<BreakdownPeriod | null>(null);
   currentTask = signal('Diseño de componentes UI');
+  assignOpen = signal(false);
 
-  // Mock data
+  // Meta del día
+  readonly goalHours = 6;
+  readonly goalProgress = computed(() => {
+    const pct = (this.todayWorkSeconds() / (this.goalHours * 3600)) * 100;
+    return Math.min(100, Math.round(pct));
+  });
+  readonly workedTodayLabel = computed(() => this.formatHm(this.todayWorkSeconds()));
+  readonly goalRemainingLabel = computed(() => {
+    const remaining = this.goalHours * 3600 - this.todayWorkSeconds();
+    return remaining > 0 ? this.formatHm(remaining) : null;
+  });
+
+  // Mock data — TODO(Fase 3/6): reemplazar por proyectos y actividad reales del backend
   readonly mockProjects: Project[] = [
-    // { id: 1, name: 'Diseño Web Zezame', color: 'from-coral to-yellow', hours: 24.5, progress: 75 },
-    // { id: 2, name: 'App Mobile React', color: 'from-cyan to-lime', hours: 18.2, progress: 45 },
-    // { id: 3, name: 'Dashboard Analytics', color: 'from-yellow to-lime', hours: 12.8, progress: 90 },
-    // { id: 4, name: 'API Backend', color: 'from-lime to-cyan', hours: 8.3, progress: 30 },
+    { id: 1, name: 'Diseño Web Zezame', color: 'from-coral to-yellow', hours: 24.5, progress: 75 },
+    { id: 2, name: 'App Mobile React', color: 'from-cyan to-lime', hours: 18.2, progress: 45 },
+    { id: 3, name: 'Dashboard Analytics', color: 'from-yellow to-lime', hours: 12.8, progress: 90 },
+    { id: 4, name: 'API Backend', color: 'from-lime to-cyan', hours: 8.3, progress: 30 },
   ];
 
   readonly mockRecentActivity: Activity[] = [
-    // { id: 1, project: 'Diseño Web Zezame', task: 'Diseño de landing page', duration: '2h 15m', time: 'Hoy, 10:30' },
-    // { id: 2, project: 'App Mobile React', task: 'Implementación de auth', duration: '1h 45m', time: 'Hoy, 08:15' },
-    // { id: 3, project: 'Dashboard Analytics', task: 'Gráficos de rendimiento', duration: '3h 20m', time: 'Ayer, 14:00' },
-    // { id: 4, project: 'API Backend', task: 'Endpoints de usuarios', duration: '2h 00m', time: 'Ayer, 09:30' },
+    { id: 1, project: 'Diseño Web Zezame', task: 'Diseño de landing page', duration: '2h 15m', time: 'Hoy, 10:30' },
+    { id: 2, project: 'App Mobile React', task: 'Implementación de auth', duration: '1h 45m', time: 'Hoy, 08:15' },
+    { id: 3, project: 'Dashboard Analytics', task: 'Gráficos de rendimiento', duration: '3h 20m', time: 'Ayer, 14:00' },
+    { id: 4, project: 'API Backend', task: 'Endpoints de usuarios', duration: '2h 00m', time: 'Ayer, 09:30' },
   ];
 
   // Signals para estadísticas reactivas
@@ -150,7 +164,7 @@ export class Timer implements OnInit, OnDestroy {
     },
   ]);
 
-  currentProject = signal(this.mockProjects[0] ?? null);
+  currentProject = signal<Project | null>(this.mockProjects[0] ?? null);
 
   ngOnInit(): void {
     this.subscribeToTimer();
@@ -237,6 +251,21 @@ export class Timer implements OnInit, OnDestroy {
     this.breakdownPeriod.set(null);
   }
 
+  openAssign() {
+    this.assignOpen.set(true);
+  }
+
+  closeAssign() {
+    this.assignOpen.set(false);
+  }
+
+  // TODO(Fase 4): asociar proyecto/actividad reales a la entrada al iniciar el timer
+  onAssign(event: { projectId: number; activityName: string }) {
+    const project = this.mockProjects.find((p) => p.id === event.projectId);
+    if (project) this.currentProject.set(project);
+    this.currentTask.set(event.activityName);
+  }
+
   private recalculateTodayWork(list: TimeEntry[]): void {
     let totalSeconds = 0;
 
@@ -305,5 +334,12 @@ export class Timer implements OnInit, OnDestroy {
       .padStart(2, '0');
     const s = (totalSeconds % 60).toString().padStart(2, '0');
     return `${h}:${m}:${s}`;
+  }
+
+  // Formato "Xh YYm" (para la meta del día)
+  formatHm(totalSeconds: number): string {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    return h > 0 ? `${h}h ${m.toString().padStart(2, '0')}m` : `${m}m`;
   }
 }
