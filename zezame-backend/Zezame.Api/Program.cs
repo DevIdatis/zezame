@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:4200";
 
 builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", p => p
-    .WithOrigins(frontendUrl) // Origen específico, no wildcard
+    .WithOrigins(frontendUrl) // Origen especï¿½fico, no wildcard
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials()));
@@ -77,6 +77,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<TimeService>();
+builder.Services.AddScoped<ReportService>();
 
 builder.Services.AddHttpContextAccessor();
 

@@ -92,3 +92,28 @@ export interface CreateActivityRequest {
   assignedToId?: string | null;
   estimatedMinutes?: number | null;
 }
+
+// Reporting
+export interface CalendarDay {
+  day: number;
+  hours: number;
+  events: number;
+}
+
+export interface DayEntry {
+  id: string;
+  description: string | null;
+  projectName: string | null;
+  activityName: string | null;
+  startTime: string;
+  endTime: string | null;
+  durationMin: number | null;
+  type: string; // 'Work' | 'Break'
+}
+
+export interface DaySummary {
+  date: string;
+  totalMinutes: number;
+  taskCount: number;
+  entries: DayEntry[];
+}

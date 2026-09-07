@@ -1,1 +1,222 @@
-<p>calendar works!</p>
+<div class="space-y-8">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-display font-bold text-foreground flex items-center gap-3">
+        <lucide-icon [img]="icons.CalendarIcon" class="w-8 h-8 text-cyan"></lucide-icon>
+        Calendario
+      </h1>
+      <p class="text-muted-foreground mt-1">Visualiza tu tiempo y planifica tu semana 📅</p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button
+        class="flex items-center gap-2 border border-border/50 bg-card px-4 py-2 rounded-xl font-medium hover:bg-muted transition-colors"
+      >
+        <lucide-icon [img]="icons.Filter" class="w-4 h-4"></lucide-icon>
+        Filtrar
+      </button>
+      <button
+        class="flex items-center gap-2 bg-gradient-to-r from-cyan to-lime hover:opacity-90 text-white shadow-lg px-4 py-2 rounded-xl font-semibold transition-opacity"
+      >
+        <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
+        Añadir Entrada
+      </button>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-6">
+    <!-- Calendar -->
+    <div class="lg:col-span-2 bg-card/80 backdrop-blur-sm border border-border rounded-xl">
+      <div class="flex flex-row items-center justify-between p-6 pb-4">
+        <div class="flex items-center gap-4">
+          <button class="p-2 rounded-lg hover:bg-muted transition-colors" (click)="prevMonth()">
+            <lucide-icon [img]="icons.ChevronLeft" class="w-5 h-5"></lucide-icon>
+          </button>
+          <h2 class="text-xl font-display font-semibold">{{ monthLabel() }}</h2>
+          <button class="p-2 rounded-lg hover:bg-muted transition-colors" (click)="nextMonth()">
+            <lucide-icon [img]="icons.ChevronRight" class="w-5 h-5"></lucide-icon>
+          </button>
+        </div>
+        <button
+          class="border border-border/50 bg-card px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+          (click)="goToday()"
+        >
+          Hoy
+        </button>
+      </div>
+      <div class="px-6 pb-6">
+        <!-- Week days header -->
+        <div class="grid grid-cols-7 gap-2 mb-4">
+          @for (d of weekDays; track d) {
+            <div class="text-center text-sm font-medium text-muted-foreground py-2">{{ d }}</div>
+          }
+        </div>
+
+        <!-- Calendar grid -->
+        <div class="grid grid-cols-7 gap-2">
+          @for (b of blanks(); track $index) {
+            <div class="aspect-square"></div>
+          }
+          @for (day of days(); track day.day) {
+            <button
+              (click)="selectDay(day.day)"
+              class="aspect-square rounded-xl p-2 flex flex-col items-center justify-center gap-1 transition-all duration-200 relative"
+              [class]="
+                getHoursColor(day.hours) +
+                ' ' +
+                getHoursIntensity(day.hours) +
+                (selectedDay() === day.day ? ' ring-2 ring-coral shadow-lg scale-105' : ' hover:scale-105') +
+                (isToday(day.day) ? ' border-2 border-coral' : '')
+              "
+            >
+              <span
+                class="text-sm font-semibold"
+                [class]="selectedDay() === day.day ? 'text-coral' : 'text-foreground'"
+              >
+                {{ day.day }}
+              </span>
+              @if (day.hours > 0) {
+                <span class="text-xs text-muted-foreground">{{ day.hours }}h</span>
+              }
+              @if (isToday(day.day)) {
+                <div
+                  class="absolute -top-1 -right-1 w-3 h-3 bg-coral rounded-full animate-pulse"
+                ></div>
+              }
+            </button>
+          }
+        </div>
+
+        <!-- Legend -->
+        <div class="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-border/50 flex-wrap">
+          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            <div class="w-4 h-4 rounded bg-muted/50"></div>
+            <span>Sin registro</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            <div class="w-4 h-4 rounded bg-yellow/30"></div>
+            <span>&lt;4h</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            <div class="w-4 h-4 rounded bg-lime/30"></div>
+            <span>4-6h</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            <div class="w-4 h-4 rounded bg-cyan/30"></div>
+            <span>6-8h</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            <div class="w-4 h-4 rounded bg-coral/30"></div>
+            <span>8h+</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Day Details -->
+    <div class="space-y-6">
+      <div class="bg-card/80 backdrop-blur-sm border border-border rounded-xl">
+        <div class="p-6 pb-3">
+          <h3 class="text-lg font-display font-semibold flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <lucide-icon [img]="icons.Sparkles" class="w-5 h-5 text-yellow"></lucide-icon>
+              Día {{ selectedDay() }}
+            </span>
+            @if (isSelectedToday()) {
+              <span
+                class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-coral/20 text-coral border-coral/30"
+              >
+                Hoy
+              </span>
+            }
+          </h3>
+        </div>
+        <div class="px-6 pb-6 space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 rounded-xl bg-gradient-to-br from-coral/10 to-yellow/10 text-center">
+              <p class="text-2xl font-display font-bold text-coral">
+                {{ formatHm(daySummary()?.totalMinutes ?? 0) }}
+              </p>
+              <p class="text-sm text-muted-foreground">Registradas</p>
+            </div>
+            <div class="p-4 rounded-xl bg-gradient-to-br from-cyan/10 to-lime/10 text-center">
+              <p class="text-2xl font-display font-bold text-cyan">
+                {{ daySummary()?.taskCount ?? 0 }}
+              </p>
+              <p class="text-sm text-muted-foreground">Tareas</p>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-border/50">
+            <h4 class="font-medium text-foreground mb-3">Entradas del día</h4>
+            <div class="space-y-3">
+              @if (!daySummary() || daySummary()!.entries.length === 0) {
+                <p class="text-sm text-muted-foreground text-center py-4">
+                  No hay entradas este día.
+                </p>
+              } @else {
+                @for (event of daySummary()!.entries; track event.id) {
+                  <div
+                    class="p-3 rounded-xl border-l-4 bg-muted/50"
+                    [class]="event.type === 'Break' ? 'border-yellow' : 'border-coral'"
+                  >
+                    <div class="flex items-center justify-between">
+                      <span class="font-medium text-foreground">
+                        {{ event.activityName || event.description || 'Sin descripción' }}
+                      </span>
+                      <span class="text-sm text-muted-foreground">
+                        {{ formatHm(event.durationMin ?? 0) }}
+                      </span>
+                    </div>
+                    @if (event.projectName) {
+                      <div class="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                        <lucide-icon [img]="icons.Target" class="w-3 h-3"></lucide-icon>
+                        <span>{{ event.projectName }}</span>
+                      </div>
+                    }
+                    <div class="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      <lucide-icon [img]="icons.Clock" class="w-3 h-3"></lucide-icon>
+                      <span>{{ formatTimeRange(event.startTime, event.endTime) }}</span>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Summary -->
+      <div class="bg-gradient-to-br from-card via-card to-cyan/5 border border-border rounded-xl">
+        <div class="p-6">
+          <h4 class="font-display font-semibold text-foreground mb-4 flex items-center gap-2">
+            📊 Resumen Semanal
+          </h4>
+          <div class="space-y-3">
+            @for (d of weeklySummary(); track d.day) {
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-muted-foreground w-10">{{ d.day }}</span>
+                <div class="flex-1 h-3 bg-muted rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-gradient-to-r from-coral to-yellow rounded-full"
+                    [style.width.%]="d.pct"
+                  ></div>
+                </div>
+                <span class="text-sm font-medium text-foreground w-12 text-right">
+                  {{ d.hours }}h
+                </span>
+              </div>
+            }
+          </div>
+          <div class="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+            <span class="text-sm text-muted-foreground">Total semanal</span>
+            <span class="text-lg font-display font-bold text-coral">
+              {{ weeklyTotal() | number: '1.0-1' }}h
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

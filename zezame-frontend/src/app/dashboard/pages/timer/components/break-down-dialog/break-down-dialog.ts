@@ -1,19 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { LucideAngularModule, X } from 'lucide-angular';
+import { ReportService } from '../../../../../core/report.service';
+import { DayEntry, DaySummary } from '../../../../../core/models';
 
 export type BreakdownPeriod = 'day' | 'week' | 'month';
-
-interface TimeEntry {
-  id: number;
-  project: string;
-  task: string;
-  color: string;
-  start: string;
-  end: string;
-  pauses: { from: string; to: string }[];
-  durationMin: number;
-}
 
 @Component({
   selector: 'app-break-down-dialog',
@@ -21,7 +22,9 @@ interface TimeEntry {
   templateUrl: './break-down-dialog.html',
   styleUrl: './break-down-dialog.scss',
 })
-export class BreakDownDialog {
+export class BreakDownDialog implements OnChanges {
+  private reports = inject(ReportService);
+
   @Input() open = false;
 
   @Input() period: BreakdownPeriod | null = null;
@@ -38,25 +41,53 @@ export class BreakDownDialog {
     });
   });
 
-  dayEntries: TimeEntry[] = [
-    {
-      id: 1,
-      project: 'Diseño Web Zezame',
-      task: 'Diseño de landing page',
-      color: 'from-coral to-yellow',
-      start: '08:15',
-      end: '10:30',
-      pauses: [
-        { from: '09:10', to: '09:25' },
-        { from: '09:10', to: '09:25' },
-        { from: '09:10', to: '09:25' },
-        { from: '09:10', to: '09:25' },
-        { from: '09:10', to: '09:25' },
-      ],
-      durationMin: 120,
-    },
-  ];
+  // ===== DÍA (datos reales) =====
+  daySummary = signal<DaySummary | null>(null);
 
+  dayWorkEntries = computed<DayEntry[]>(
+    () => this.daySummary()?.entries.filter((e) => e.type !== 'Break') ?? [],
+  );
+  dayBreakCount = computed(
+    () => this.daySummary()?.entries.filter((e) => e.type === 'Break').length ?? 0,
+  );
+  dayTotalMin = computed(() => this.daySummary()?.totalMinutes ?? 0);
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if ((changes['open'] || changes['period']) && this.open && this.period === 'day') {
+      this.loadToday();
+    }
+  }
+
+  private loadToday(): void {
+    const now = new Date();
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      now.getDate(),
+    ).padStart(2, '0')}`;
+    this.reports.getDay(date).subscribe({
+      next: (summary) => this.daySummary.set(summary),
+      error: (err) => console.error('Error cargando resumen del día:', err),
+    });
+  }
+
+  fmt(min: number): string {
+    if (min <= 0) return '0m';
+
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+
+    return h > 0 ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`;
+  }
+
+  time(iso: string | null): string {
+    if (!iso) return '...';
+    return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  close() {
+    this.openChange.emit(false);
+  }
+
+  // ===== SEMANA / MES (mock — TODO Fase 6) =====
   weekDays = [
     {
       day: 'Lun',
@@ -89,33 +120,4 @@ export class BreakDownDialog {
       color: 'from-coral to-yellow',
     },
   ];
-
-  fmt(min: number): string {
-    if (min <= 0) return '0m';
-
-    const h = Math.floor(min / 60);
-    const m = min % 60;
-
-    return h > 0 ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`;
-  }
-
-  close() {
-    this.openChange.emit(false);
-  }
-
-  get totalDayMin() {
-    return this.dayEntries.reduce((s, e) => s + e.durationMin, 0);
-  }
-
-  get totalDayPauses() {
-    return this.dayEntries.reduce((s, e) => s + e.pauses.length, 0);
-  }
-
-  pauseMinutes(e: TimeEntry): number {
-    return e.pauses.reduce((s, p) => {
-      const [fh, fm] = p.from.split(':').map(Number);
-      const [th, tm] = p.to.split(':').map(Number);
-      return s + (th * 60 + tm) - (fh * 60 + fm);
-    }, 0);
-  }
 }

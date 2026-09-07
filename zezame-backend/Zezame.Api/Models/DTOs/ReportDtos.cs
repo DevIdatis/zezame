@@ -1,0 +1,21 @@
+namespace Zezame.Api.Models.DTOs {
+    public record CalendarDayDto(int Day, double Hours, int Events);
+
+    public record DayEntryDto(
+        Guid Id,
+        string? Description,
+        string? ProjectName,
+        string? ActivityName,
+        DateTime StartTime,
+        DateTime? EndTime,
+        int? DurationMin,
+        string Type
+    );
+
+    public record DaySummaryDto(
+        DateTime Date,
+        int TotalMinutes,
+        int TaskCount,
+        IReadOnlyList<DayEntryDto> Entries
+    );
+}
