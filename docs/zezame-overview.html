@@ -1,0 +1,877 @@
+<title>Zezame</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  :root {
+    --ground: #fffdf6;
+    --surface: #ffffff;
+    --surface-2: #fbf7ec;
+    --ink: #1a1826;
+    --muted: #6f6a58;
+    --border: #ece4d3;
+    --code-bg: #f6f1e5;
+    --coral: #e85f2c;
+    --cyan: #0f9d9d;
+    --yellow: #b98908;
+    --lime: #5f9f26;
+    --purple: #7f47dd;
+    --shadow: 0 10px 30px -18px rgba(26, 24, 38, 0.35);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --ground: #121019;
+      --surface: #1a1824;
+      --surface-2: #201e2c;
+      --ink: #f3eee4;
+      --muted: #a8a291;
+      --border: #2c2937;
+      --code-bg: #1d1b27;
+      --coral: #ff7d4d;
+      --cyan: #2ed3d3;
+      --yellow: #f2c34a;
+      --lime: #93d857;
+      --purple: #ab7cf3;
+      --shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.7);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --ground: #121019;
+    --surface: #1a1824;
+    --surface-2: #201e2c;
+    --ink: #f3eee4;
+    --muted: #a8a291;
+    --border: #2c2937;
+    --code-bg: #1d1b27;
+    --coral: #ff7d4d;
+    --cyan: #2ed3d3;
+    --yellow: #f2c34a;
+    --lime: #93d857;
+    --purple: #ab7cf3;
+    --shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.7);
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---- Top bar ---- */
+  header.bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 60px;
+  }
+  .brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    background: linear-gradient(100deg, var(--coral), var(--yellow) 55%, var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    white-space: nowrap;
+  }
+  nav.toc {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+  nav.toc a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+  nav.toc a:hover {
+    color: var(--ink);
+    background: var(--surface-2);
+  }
+  .theme-btn {
+    flex: none;
+    width: 38px;
+    height: 34px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+  .theme-btn:hover {
+    border-color: var(--coral);
+  }
+  nav.toc a:focus-visible,
+  .theme-btn:focus-visible,
+  .anchor:focus-visible {
+    outline: 2px solid var(--coral);
+    outline-offset: 2px;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding: 64px 0 40px;
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--coral);
+    margin: 0 0 14px;
+  }
+  h1.title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 7vw, 4.2rem);
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h1.title .grad {
+    background: linear-gradient(100deg, var(--coral), var(--yellow) 50%, var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lede {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 62ch;
+    margin: 20px 0 0;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 26px;
+  }
+  .chip {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+  }
+  .chip b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---- Sections ---- */
+  section {
+    padding: 30px 0;
+    border-top: 1px solid var(--border);
+  }
+  .kicker {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 0 6px;
+  }
+  h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 1.7rem;
+    letter-spacing: -0.02em;
+    margin: 0;
+    scroll-margin-top: 76px;
+    text-wrap: balance;
+  }
+  .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--coral);
+    font-weight: 500;
+  }
+  section > p {
+    max-width: 68ch;
+    color: var(--ink);
+  }
+  section > p.sub {
+    color: var(--muted);
+  }
+  a.link {
+    color: var(--coral);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--coral) 40%, transparent);
+  }
+  a.link:hover {
+    border-bottom-color: var(--coral);
+  }
+
+  /* ---- Diagram ---- */
+  figure.diagram {
+    margin: 22px 0 0;
+    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+  figure.diagram svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    color: var(--ink);
+  }
+  figcaption {
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ---- Cards grid ---- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 10px 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .card p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .card .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  /* ---- Stack columns ---- */
+  .stack {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .stack .card ul {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .stack .card li {
+    font-size: 0.9rem;
+    display: flex;
+    gap: 9px;
+    align-items: baseline;
+  }
+  .stack .card li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--coral);
+    flex: none;
+    transform: translateY(-2px);
+  }
+  .stack .card li b {
+    font-weight: 600;
+  }
+  .stack .card li span {
+    color: var(--muted);
+  }
+
+  /* ---- Entities ---- */
+  .entities {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .entity {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 6px 20px;
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+  }
+  .entity .name {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 0.95rem;
+  }
+  .entity .name small {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    color: var(--muted);
+    font-size: 0.72rem;
+    margin-top: 3px;
+    letter-spacing: 0.02em;
+  }
+  .entity .fields {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .entity .fields code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: var(--ink);
+  }
+
+  /* ---- Roles table ---- */
+  .table-scroll {
+    overflow-x: auto;
+    margin-top: 22px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 460px;
+    font-size: 0.9rem;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    background: var(--surface-2);
+    font-size: 0.82rem;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  td b {
+    font-weight: 600;
+  }
+  .role-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  /* ---- Steps ---- */
+  .steps {
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 22px;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--coral), var(--yellow));
+  }
+  .step h3 {
+    margin: 6px 0 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .step p {
+    margin: 0 0 10px;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  pre {
+    margin: 0;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 15px;
+    overflow-x: auto;
+  }
+  pre code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--ink);
+    white-space: pre;
+  }
+  .cmt {
+    color: var(--muted);
+  }
+
+  /* ---- Repo tree ---- */
+  .tree {
+    margin-top: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    overflow-x: auto;
+  }
+  .tree pre {
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .tree code {
+    font-size: 0.82rem;
+    line-height: 1.75;
+  }
+  .tree .c {
+    color: var(--coral);
+  }
+  .tree .m {
+    color: var(--muted);
+  }
+
+  footer {
+    padding: 40px 0 60px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 620px) {
+    nav.toc {
+      display: none;
+    }
+    .entity {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      scroll-behavior: auto;
+    }
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+</style>
+
+<header class="bar">
+  <div class="wrap bar-inner">
+    <span class="brand">Zezame</span>
+    <nav class="toc" aria-label="Secciones">
+      <a href="#que-es">Qué es</a>
+      <a href="#arquitectura">Arquitectura</a>
+      <a href="#stack">Stack</a>
+      <a href="#datos">Datos</a>
+      <a href="#modulos">Módulos</a>
+      <a href="#seguridad">Roles</a>
+      <a href="#ejecutar">Ejecutar</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Cambiar tema">◐</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- HERO -->
+  <div class="hero">
+    <p class="eyebrow">Registro de tiempo laboral · Documentación</p>
+    <h1 class="title">Controla el tiempo,<br /><span class="grad">domina el día</span></h1>
+    <p class="lede">
+      Zezame es una aplicación para <b>fichar el tiempo de trabajo</b> de un equipo: iniciar y pausar
+      el cronómetro, asociar cada sesión a un proyecto y una actividad, y visualizarlo todo en un
+      calendario y en reportes. En la línea de Sesame, pero con una interfaz propia y colorida.
+    </p>
+    <div class="chips">
+      <span class="chip">Frontend <b>Angular 20</b></span>
+      <span class="chip">Backend <b>.NET 8</b></span>
+      <span class="chip">BBDD <b>PostgreSQL</b></span>
+      <span class="chip">Tiempo real <b>SignalR</b></span>
+      <span class="chip">Auth <b>JWT</b></span>
+    </div>
+  </div>
+
+  <!-- QUÉ ES -->
+  <section id="que-es">
+    <div class="kicker"><span class="num">01</span></div>
+    <h2>Qué es y para qué sirve</h2>
+    <p>
+      El corazón de Zezame es un <b>cronómetro</b>: un usuario ficha cuando empieza a trabajar, hace
+      pausas cuando descansa y detiene la jornada al terminar. Cada entrada de tiempo se puede asociar
+      a un <b>proyecto</b> y a una <b>actividad</b> concreta, de modo que después se sabe en qué se
+      fue el tiempo.
+    </p>
+    <p class="sub">
+      Sobre esa base, la aplicación añade organización de equipo (proyectos con miembros y tareas),
+      una vista de <b>calendario</b> con mapa de calor de horas por día, <b>reportes</b> de
+      productividad con ranking de equipo, y ajustes de perfil y apariencia. Todo el estado del
+      cronómetro se sincroniza en tiempo real entre pestañas y dispositivos mediante SignalR.
+    </p>
+  </section>
+
+  <!-- ARQUITECTURA -->
+  <section id="arquitectura">
+    <div class="kicker"><span class="num">02</span></div>
+    <h2>Cómo está construida</h2>
+    <p>
+      Tres piezas: una <b>SPA de Angular</b> que el usuario ve en el navegador, una <b>API REST</b>
+      en .NET que aplica la lógica y la seguridad, y una base de datos <b>PostgreSQL</b>. La API sigue
+      una arquitectura por capas (Dominio · Infraestructura · Api). Además del REST clásico, un canal
+      <b>SignalR</b> empuja los cambios del cronómetro al instante.
+    </p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 780 260" role="img" aria-label="La app Angular habla con la API .NET por REST con JWT y por un canal SignalR en tiempo real; la API accede a PostgreSQL mediante EF Core.">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
+          </marker>
+          <marker id="arC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" style="fill: var(--coral)" />
+          </marker>
+        </defs>
+
+        <!-- Boxes -->
+        <g font-family="'Space Grotesk', sans-serif">
+          <rect x="16" y="86" width="196" height="88" rx="14" style="fill: var(--surface-2)" stroke="currentColor" stroke-opacity="0.35" />
+          <text x="114" y="122" text-anchor="middle" font-size="16" font-weight="600" fill="currentColor">Angular 20</text>
+          <text x="114" y="144" text-anchor="middle" font-size="12" style="fill: var(--muted)" font-family="Inter, sans-serif">SPA + SSR (navegador)</text>
+
+          <rect x="292" y="86" width="196" height="88" rx="14" style="fill: var(--surface-2)" stroke="currentColor" stroke-opacity="0.35" />
+          <text x="390" y="122" text-anchor="middle" font-size="16" font-weight="600" fill="currentColor">API .NET 8</text>
+          <text x="390" y="144" text-anchor="middle" font-size="12" style="fill: var(--muted)" font-family="Inter, sans-serif">ASP.NET Core</text>
+
+          <rect x="568" y="86" width="196" height="88" rx="14" style="fill: var(--surface-2)" stroke="currentColor" stroke-opacity="0.35" />
+          <text x="666" y="122" text-anchor="middle" font-size="16" font-weight="600" fill="currentColor">PostgreSQL</text>
+          <text x="666" y="144" text-anchor="middle" font-size="12" style="fill: var(--muted)" font-family="Inter, sans-serif">base de datos</text>
+        </g>
+
+        <g font-family="Inter, sans-serif" font-size="12">
+          <!-- Angular -> API (REST) -->
+          <line x1="212" y1="112" x2="292" y2="112" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar)" />
+          <text x="252" y="103" text-anchor="middle" style="fill: var(--muted)">REST · JWT</text>
+
+          <!-- API -> Angular (SignalR, coral, dashed) -->
+          <line x1="292" y1="150" x2="212" y2="150" style="stroke: var(--coral)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arC)" />
+          <text x="252" y="169" text-anchor="middle" style="fill: var(--coral)" font-weight="500">SignalR</text>
+
+          <!-- API <-> DB (EF Core) -->
+          <line x1="488" y1="124" x2="568" y2="124" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar)" />
+          <line x1="568" y1="138" x2="488" y2="138" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar)" />
+          <text x="528" y="112" text-anchor="middle" style="fill: var(--muted)">EF Core</text>
+        </g>
+
+        <text x="390" y="228" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" style="fill: var(--muted)">
+          El cronómetro viaja por REST para guardarse y por SignalR para reflejarse al instante en cada cliente.
+        </text>
+      </svg>
+      <figcaption>Flujo de una petición: la SPA guarda vía REST; la API notifica el cambio a los clientes por SignalR.</figcaption>
+    </figure>
+  </section>
+
+  <!-- STACK -->
+  <section id="stack">
+    <div class="kicker"><span class="num">03</span></div>
+    <h2>Tecnologías</h2>
+    <div class="stack">
+      <div class="card">
+        <span class="tag" style="color: var(--coral)">Frontend</span>
+        <ul>
+          <li><b>Angular&nbsp;20</b> <span>· standalone, signals, control-flow</span></li>
+          <li><b>SSR</b> <span>· render en servidor (dashboard en cliente)</span></li>
+          <li><b>Tailwind&nbsp;3</b> <span>· estilos y tema claro/oscuro</span></li>
+          <li><b>lucide-angular</b> <span>· iconos</span></li>
+          <li><b>@microsoft/signalr</b> <span>· tiempo real</span></li>
+          <li><b>RxJS</b> <span>· estado reactivo</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag" style="color: var(--cyan)">Backend</span>
+        <ul>
+          <li><b>ASP.NET&nbsp;Core</b> <span>· API REST</span></li>
+          <li><b>EF&nbsp;Core</b> <span>· ORM sobre Npgsql</span></li>
+          <li><b>SignalR</b> <span>· hub del cronómetro</span></li>
+          <li><b>JWT&nbsp;Bearer</b> <span>· autenticación</span></li>
+          <li><b>BCrypt</b> <span>· hash de contraseñas</span></li>
+          <li><b>Swagger</b> <span>· API en desarrollo</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag" style="color: var(--lime)">Datos e infra</span>
+        <ul>
+          <li><b>PostgreSQL&nbsp;15</b> <span>· en Docker</span></li>
+          <li><b>Migraciones EF</b> <span>· esquema versionado</span></li>
+          <li><b>user-secrets</b> <span>· claves fuera del repo</span></li>
+          <li><b>Clean Architecture</b> <span>· Domain / Infra / Api</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- DATOS -->
+  <section id="datos">
+    <div class="kicker"><span class="num">04</span></div>
+    <h2>Modelo de datos</h2>
+    <p class="sub">
+      Cinco entidades. Todas comparten <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem">Id</code>,
+      fechas de creación/actualización y borrado lógico (<code style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem">IsDeleted</code>).
+    </p>
+    <div class="entities">
+      <div class="entity">
+        <div class="name">User <small>usuario</small></div>
+        <div class="fields">Email, contraseña (hash), nombre, <code>Role</code> (User/Coordinator/Admin), zona horaria e idioma.</div>
+      </div>
+      <div class="entity">
+        <div class="name">Project <small>proyecto</small></div>
+        <div class="fields">Nombre, descripción, color, emoji, <code>Status</code> (Active/Paused/Completed), fecha límite y un <b>dueño</b>.</div>
+      </div>
+      <div class="entity">
+        <div class="name">ProjectMember <small>miembro</small></div>
+        <div class="fields">Une un <code>User</code> con un <code>Project</code> — así un proyecto tiene un equipo.</div>
+      </div>
+      <div class="entity">
+        <div class="name">Activity <small>actividad / tarea</small></div>
+        <div class="fields">Tarea dentro de un proyecto: nombre, emoji, <code>Status</code>, estimación y a quién está asignada.</div>
+      </div>
+      <div class="entity">
+        <div class="name">TimeEntry <small>entrada de tiempo</small></div>
+        <div class="fields">El fichaje: inicio, fin, duración, <code>Type</code> (<b>Work</b> o <b>Break</b>) y las referencias opcionales a proyecto y actividad.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MÓDULOS -->
+  <section id="modulos">
+    <div class="kicker"><span class="num">05</span></div>
+    <h2>Módulos de la aplicación</h2>
+    <p class="sub">Las cinco pantallas del panel, más el acceso público.</p>
+    <div class="grid">
+      <div class="card">
+        <span class="tag">Panel · inicio</span>
+        <h3><span class="dot" style="background: var(--coral)"></span>Timer</h3>
+        <p>Cronómetro con play / pausa / reanudar / stop, meta diaria, proyectos activos y el diálogo para asociar la sesión a un proyecto y actividad.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Panel</span>
+        <h3><span class="dot" style="background: var(--coral)"></span>Proyectos</h3>
+        <p>Rejilla o lista de proyectos con horas, progreso, miembros y estado. Filtros por estado y búsqueda.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Panel</span>
+        <h3><span class="dot" style="background: var(--cyan)"></span>Calendario</h3>
+        <p>Mapa de calor mensual coloreado por horas trabajadas, detalle del día y resumen semanal.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Panel</span>
+        <h3><span class="dot" style="background: var(--yellow)"></span>Reportes</h3>
+        <p>Horas totales, productividad, gráfico semanal, tarta por proyecto, ranking de equipo y actividad diaria.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Panel</span>
+        <h3><span class="dot" style="background: var(--lime)"></span>Ajustes</h3>
+        <p>Perfil, notificaciones, apariencia (tema claro/oscuro/sistema), seguridad (cambio de contraseña) y facturación.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Público</span>
+        <h3><span class="dot" style="background: var(--purple)"></span>Landing + Acceso</h3>
+        <p>Página de presentación con secciones de marketing y el modal de inicio de sesión / registro.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEGURIDAD -->
+  <section id="seguridad">
+    <div class="kicker"><span class="num">06</span></div>
+    <h2>Roles y seguridad</h2>
+    <p>
+      El acceso se autentica con <b>JWT</b> (token de 24&nbsp;h). El registro público siempre crea un
+      usuario básico; los roles elevados los concede un administrador. Las contraseñas se guardan con
+      <b>BCrypt</b> y las claves sensibles viven en <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem">user-secrets</code>, fuera del repositorio.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Rol</th><th>Puede</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="role-pill" style="color: var(--lime); border-color: var(--lime)">User</span></td>
+            <td>Fichar su tiempo, ver sus proyectos, calendario y reportes propios.</td>
+          </tr>
+          <tr>
+            <td><span class="role-pill" style="color: var(--cyan); border-color: var(--cyan)">Coordinator</span></td>
+            <td>Además: <b>crear y gestionar proyectos</b>, crear actividades, añadir miembros y ver el ranking del equipo.</td>
+          </tr>
+          <tr>
+            <td><span class="role-pill" style="color: var(--coral); border-color: var(--coral)">Admin</span></td>
+            <td>Control total sobre cualquier proyecto y recurso.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- EJECUTAR -->
+  <section id="ejecutar">
+    <div class="kicker"><span class="num">07</span></div>
+    <h2>Cómo ejecutarla en local</h2>
+    <div class="steps">
+      <div class="step">
+        <div>
+          <h3>Base de datos (Docker)</h3>
+          <p>Levanta PostgreSQL. La app espera la base <code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">zezame_db</code> en el puerto 5432.</p>
+          <pre><code>docker run --name db -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=masterkey -e POSTGRES_DB=zezame_db \
+  -p 5432:5432 -d postgres:15</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Backend (.NET)</h3>
+          <p>Configura los secretos, aplica las migraciones y arranca la API en <code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">https://localhost:7107</code>.</p>
+          <pre><code>cd zezame-backend
+<span class="cmt"># claves fuera del repo (una sola vez)</span>
+dotnet user-secrets set "Jwt:Key" "&lt;clave-de-32+-caracteres&gt;" --project Zezame.Api
+dotnet user-secrets set "ConnectionStrings:Default" \
+  "Host=localhost;Port=5432;Database=zezame_db;Username=postgres;Password=masterkey" --project Zezame.Api
+
+dotnet ef database update -p Zezame.Infrastructure -s Zezame.Api
+dotnet run --project Zezame.Api --launch-profile https</code></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div>
+          <h3>Frontend (Angular)</h3>
+          <p>Instala dependencias y sirve la SPA en <code style="font-family:'JetBrains Mono',monospace;font-size:.8rem">http://localhost:4200</code>.</p>
+          <pre><code>cd zezame-frontend
+npm install
+npm start</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPO -->
+  <section id="repo">
+    <div class="kicker"><span class="num">08</span></div>
+    <h2>Estructura del repositorio</h2>
+    <div class="tree">
+      <pre><code><span class="c">zezame-backend/</span>            <span class="m"># API .NET (Clean Architecture)</span>
+  Zezame.Domain/         <span class="m"># entidades y contratos (interfaces)</span>
+  Zezame.Infrastructure/ <span class="m"># EF Core, repositorios, migraciones</span>
+  Zezame.Api/            <span class="m"># controladores, servicios, SignalR, JWT</span>
+<span class="c">zezame-frontend/</span>           <span class="m"># SPA Angular 20</span>
+  src/app/core/          <span class="m"># servicios, guard, interceptor, modelos</span>
+  src/app/auth/          <span class="m"># login / registro</span>
+  src/app/dashboard/     <span class="m"># timer, proyectos, calendario, reportes, ajustes</span>
+  src/app/shared/        <span class="m"># landing, navbar, sidebar, modales</span>
+<span class="c">docs/</span>                     <span class="m"># esta documentación y el plan de migración</span></code></pre>
+    </div>
+  </section>
+
+  <footer class="wrap">
+    Zezame · documentación de referencia. Registro de tiempo para equipos —
+    Angular&nbsp;20 · .NET&nbsp;8 · PostgreSQL · SignalR.
+  </footer>
+</main>
+
+<script>
+  (function () {
+    var btn = document.getElementById('themeBtn');
+    var root = document.documentElement;
+    function current() {
+      try {
+        return localStorage.getItem('zezame-doc-theme');
+      } catch (e) {
+        return null;
+      }
+    }
+    var saved = current();
+    if (saved === 'dark' || saved === 'light') root.setAttribute('data-theme', saved);
+    btn.addEventListener('click', function () {
+      var isDark =
+        root.getAttribute('data-theme') === 'dark' ||
+        (!root.getAttribute('data-theme') &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var next = isDark ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('zezame-doc-theme', next);
+      } catch (e) {}
+    });
+  })();
+</script>
