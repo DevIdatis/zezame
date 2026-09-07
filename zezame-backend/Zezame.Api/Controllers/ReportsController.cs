@@ -26,6 +26,34 @@ namespace Zezame.Api.Controllers {
             return Ok(data);
         }
 
+        // GET /api/reports/summary?month=YYYY-MM
+        [HttpGet("summary")]
+        public async Task<ActionResult<SummaryDto>> Summary([FromQuery] string month) {
+            var (y, m) = ParseMonth(month);
+            return Ok(await _reports.GetSummaryAsync(UserGuid(), y, m));
+        }
+
+        // GET /api/reports/by-project?month=YYYY-MM
+        [HttpGet("by-project")]
+        public async Task<ActionResult<IEnumerable<ProjectBreakdownDto>>> ByProject([FromQuery] string month) {
+            var (y, m) = ParseMonth(month);
+            return Ok(await _reports.GetByProjectAsync(UserGuid(), y, m));
+        }
+
+        // GET /api/reports/weekly?month=YYYY-MM
+        [HttpGet("weekly")]
+        public async Task<ActionResult<IEnumerable<WeeklyPointDto>>> Weekly([FromQuery] string month) {
+            var (y, m) = ParseMonth(month);
+            return Ok(await _reports.GetWeeklyAsync(UserGuid(), y, m));
+        }
+
+        // GET /api/reports/team?month=YYYY-MM
+        [HttpGet("team")]
+        public async Task<ActionResult<IEnumerable<TeamMemberDto>>> Team([FromQuery] string month) {
+            var (y, m) = ParseMonth(month);
+            return Ok(await _reports.GetTeamAsync(y, m));
+        }
+
         // GET /api/reports/day?date=YYYY-MM-DD
         [HttpGet("day")]
         public async Task<ActionResult<DaySummaryDto>> Day([FromQuery] string date) {
@@ -37,6 +65,15 @@ namespace Zezame.Api.Controllers {
 
             var data = await _reports.GetDayAsync(UserGuid(), parsed);
             return Ok(data);
+        }
+
+        private static (int Year, int Month) ParseMonth(string month) {
+            if (string.IsNullOrWhiteSpace(month) ||
+                !DateTime.TryParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out var parsed)) {
+                throw new InvalidOperationException("Formato de mes inválido. Usa YYYY-MM.");
+            }
+            return (parsed.Year, parsed.Month);
         }
 
         private Guid UserGuid() {

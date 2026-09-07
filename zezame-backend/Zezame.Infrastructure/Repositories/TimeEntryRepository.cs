@@ -35,6 +35,12 @@ namespace Zezame.Infrastructure.Repositories {
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<TimeEntry>> GetAllInRangeAsync(DateTime from, DateTime to)
+            => await _dbSet
+                .Where(te => te.StartTime >= from && te.StartTime <= to && !te.IsDeleted)
+                .Include(te => te.User)
+                .ToListAsync();
+
         public async Task<TimeEntry?> GetActiveByUserAsync(Guid userId)
             => await _dbSet
                 .Where(te => te.UserId == userId && !te.EndTime.HasValue && !te.IsDeleted)

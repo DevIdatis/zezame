@@ -117,3 +117,33 @@ export interface DaySummary {
   taskCount: number;
   entries: DayEntry[];
 }
+
+export interface ReportSummary {
+  totalHours: number;
+  totalChange: number;
+  avgDailyHours: number;
+  avgChange: number;
+  productivity: number;
+  productivityChange: number;
+  focusHours: number;
+  focusChange: number;
+}
+
+export interface ProjectBreakdown {
+  name: string;
+  hours: number;
+  percentage: number;
+}
+
+export interface WeeklyPoint {
+  week: string;
+  hours: number;
+  target: number;
+}
+
+export interface TeamMember {
+  name: string;
+  avatar: string;
+  hours: number;
+  productivity: number;
+}

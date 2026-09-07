@@ -18,4 +18,22 @@ namespace Zezame.Api.Models.DTOs {
         int TaskCount,
         IReadOnlyList<DayEntryDto> Entries
     );
+
+    // Resumen del mes (4 stats con variación vs mes anterior)
+    public record SummaryDto(
+        double TotalHours,
+        double TotalChange,
+        double AvgDailyHours,
+        double AvgChange,
+        int Productivity,
+        double ProductivityChange,
+        double FocusHours,
+        double FocusChange
+    );
+
+    public record ProjectBreakdownDto(string Name, double Hours, int Percentage);
+
+    public record WeeklyPointDto(string Week, double Hours, int Target);
+
+    public record TeamMemberDto(string Name, string Avatar, double Hours, int Productivity);
 }

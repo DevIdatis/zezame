@@ -121,7 +121,7 @@
             </div>
             <div>
               <h2 class="text-2xl font-display">Resumen semanal</h2>
-              <p class="text-muted-foreground">Semana del 12 al 18 de mayo</p>
+              <p class="text-muted-foreground">{{ weekRangeLabel() }}</p>
             </div>
           </div>
           <button
@@ -133,30 +133,28 @@
           </div>
 
           <!-- Totales -->
-          <div class="mt-6 grid grid-cols-4 gap-3">
+          <div class="mt-6 grid grid-cols-3 gap-3">
             <div class="col-span-1 p-5 rounded-2xl bg-gradient-to-br from-cyan/15 to-lime/15 border border-cyan/20">
               <p class="text-xs text-muted-foreground mb-1">Total</p>
-              <p class="text-2xl font-display font-bold bg-gradient-to-r from-cyan to-lime bg-clip-text text-transparent"></p>
+              <p class="text-2xl font-display font-bold bg-gradient-to-r from-cyan to-lime bg-clip-text text-transparent">
+                {{ fmt(weekTotalMin()) }}
+              </p>
             </div>
             <div class="p-5 rounded-2xl bg-muted">
               <p class="text-xs text-muted-foreground mb-1">Entradas</p>
-              <p class="text-xl font-display font-bold text-foreground"></p>
-            </div>
-            <div class="p-5 rounded-2xl bg-muted">
-              <p class="text-xs text-muted-foreground mb-1">Pausas</p>
-              <p class="text-xl font-display font-bold text-foreground"></p>
+              <p class="text-xl font-display font-bold text-foreground">{{ weekEntries() }}</p>
             </div>
             <div class="p-5 rounded-2xl bg-muted">
               <p class="text-xs text-muted-foreground mb-1">Media/día</p>
-              <p class="text-xl font-display font-bold text-foreground"></p>
+              <p class="text-xl font-display font-bold text-foreground">{{ fmt(weekAvgMin()) }}</p>
             </div>
           </div>
           <!-- Desglose por día -->
           <div class="mt-6">
             <p class="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3">Desglose por día</p>
             <div class="space-y-2">
-              @for (d of weekDays; track d.day) {
-                <div class="p-3 rounded-xl border" [class.bg-muted]="d.netMin === 0" [class.border-border]="d.netMin === 0" [class.bg-muted]="d.netMin > 0" [class.border-border]="d.netMin > 0">
+              @for (d of weekDays(); track d.day) {
+                <div class="p-3 rounded-xl border bg-muted/40 border-border/30">
                   <div class="flex items-center gap-4">
                     <div class="w-14 text-center shrink-0">
                       <p class="font-bold text-foreground">{{ d.day }}</p>
@@ -165,12 +163,12 @@
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center justify-between mb-1.5">
                         <span class="text-xs text-muted-foreground">
-                          @if (d.netMin === 0) { Sin entradas } @else { {{ d.entries }} entradas · {{ d.pauses }} pausas }
+                          @if (d.netMin === 0) { Sin entradas } @else { {{ d.events }} entradas }
                         </span>
-                        <span class="font-display font-bold text-foreground">{{ d.label }}</span>
+                        <span class="font-display font-bold text-foreground">{{ d.hours }}h</span>
                       </div>
                       <div class="h-2 bg-muted rounded-full overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-cyan to-lime rounded-full transition-all duration-500" [style.width.%]="(d.netMin / 450) * 100"></div>
+                        <div class="h-full bg-gradient-to-r from-cyan to-lime rounded-full transition-all duration-500" [style.width.%]="d.pct"></div>
                       </div>
                     </div>
                   </div>
@@ -191,7 +189,7 @@
             </div>
             <div>
               <h2 class="text-2xl font-display">Resumen mensual</h2>
-              <p class="text-muted-foreground">Mayo 2026</p>
+              <p class="text-muted-foreground">{{ monthLabel() }}</p>
             </div>
           </div>
           <button
@@ -207,11 +205,10 @@
             <!-- Sparkles -->
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute top-3 right-3 text-yellow animate-pulse"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
             <p class="text-sm text-muted-foreground mb-1">Total del mes</p>
-            <p class="text-5xl font-display font-bold bg-gradient-to-r from-yellow via-coral to-cyan bg-clip-text text-transparent">{{ fmt(2000) }}</p>
+            <p class="text-5xl font-display font-bold bg-gradient-to-r from-yellow via-coral to-cyan bg-clip-text text-transparent">{{ fmt(monthTotalMin()) }}</p>
             <div class="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
-              <span><strong class="text-foreground"></strong> entradas</span>
-              <span><strong class="text-foreground"></strong> pausas</span>
-              <span><strong class="text-foreground">{{ monthProjects.length }}</strong> proyectos</span>
+              <span><strong class="text-foreground">{{ monthWeeks().length }}</strong> semanas</span>
+              <span><strong class="text-foreground">{{ monthProjects().length }}</strong> proyectos</span>
             </div>
           </div>
 
@@ -219,17 +216,17 @@
           <div class="mt-6">
             <p class="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3">Desglose por semana</p>
             <div class="space-y-2">
-              @for (w of monthWeeks; track w.label) {
+              @for (w of monthWeeks(); track w.week) {
                 <div class="p-4 rounded-xl bg-muted/40 border border-border/30">
                   <div class="flex items-center justify-between mb-2">
                     <div class="min-w-0">
-                      <p class="font-medium text-foreground">{{ w.label }} <span class="text-xs text-muted-foreground font-normal">· {{ w.range }}</span></p>
-                      <p class="text-xs text-muted-foreground">{{ w.entries }} entradas · {{ w.pauses }} pausas · Top: {{ w.top }}</p>
+                      <p class="font-medium text-foreground">{{ w.week }}</p>
+                      <p class="text-xs text-muted-foreground">Objetivo {{ w.target }}h</p>
                     </div>
-                    <p class="font-display font-bold text-foreground shrink-0 ml-3">{{ w.hours }}</p>
+                    <p class="font-display font-bold text-foreground shrink-0 ml-3">{{ w.hours }}h</p>
                   </div>
                   <div class="h-2 bg-muted rounded-full overflow-hidden">
-                    <div class="h-full bg-gradient-to-r from-yellow via-coral to-cyan rounded-full transition-all duration-500" [style.width.%]="w.pct * 3"></div>
+                    <div class="h-full bg-gradient-to-r from-yellow via-coral to-cyan rounded-full transition-all duration-500" [style.width.%]="(w.hours / monthMaxHours()) * 100"></div>
                   </div>
                 </div>
               }
@@ -239,13 +236,13 @@
           <div class="mt-6">
             <p class="text-xs uppercase tracking-wider text-muted-foreground font-semibold mb-3">Por proyecto</p>
             <div class="grid sm:grid-cols-2 gap-3">
-              @for (p of monthProjects; track p.name) {
+              @for (p of monthProjects(); track p.name) {
                 <div class="p-4 rounded-xl bg-muted/40 flex items-center gap-3">
-                  <div class="w-3 h-12 rounded-full bg-gradient-to-b {{ p.color }}"></div>
+                  <div class="w-3 h-12 rounded-full bg-gradient-to-b from-coral to-yellow"></div>
                   <div class="flex-1 min-w-0">
                     <p class="font-medium text-foreground truncate">{{ p.name }}</p>
-                    <p class="text-xs text-muted-foreground">{{ p.entries }} entradas</p>
-                    <p class="text-lg font-display font-bold text-foreground">{{ p.hours }}</p>
+                    <p class="text-xs text-muted-foreground">{{ p.percentage }}% del total</p>
+                    <p class="text-lg font-display font-bold text-foreground">{{ p.hours }}h</p>
                   </div>
                 </div>
               }
