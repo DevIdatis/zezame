@@ -30,7 +30,6 @@ export interface TimeEntry {
 export enum EntryType {
   Work = 0,
   Break = 1,
-  Lunch = 2,
 }
 
 // Coincide con ProjectDto del backend

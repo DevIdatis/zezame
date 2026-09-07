@@ -57,9 +57,24 @@ export class Settings implements OnInit {
   private isBrowser = isPlatformBrowser(this.platformId);
 
   icons = {
-    SettingsIcon, User, Bell, Palette, Shield, CreditCard, Globe,
-    Moon, Sun, Monitor, Check, ChevronRight, Camera, Mail, Lock,
-    Smartphone, Trash2, Download,
+    SettingsIcon,
+    User,
+    Bell,
+    Palette,
+    Shield,
+    CreditCard,
+    Globe,
+    Moon,
+    Sun,
+    Monitor,
+    Check,
+    ChevronRight,
+    Camera,
+    Mail,
+    Lock,
+    Smartphone,
+    Trash2,
+    Download,
   };
 
   activeTab = signal<TabId>('profile');
@@ -80,7 +95,9 @@ export class Settings implements OnInit {
   savingProfile = signal(false);
   profileSaved = signal(false);
 
-  avatarUrl = signal('https://api.dicebear.com/7.x/avataaars/svg?seed=zezame&backgroundColor=ffdfbf');
+  avatarUrl = signal(
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=zezame&backgroundColor=ffdfbf',
+  );
 
   // ===== Apariencia =====
   readonly themeOptions: { id: Theme; label: string; icon: LucideIconData }[] = [
@@ -106,11 +123,36 @@ export class Settings implements OnInit {
     weekly: true,
     mentions: false,
   });
-  readonly notificationItems: { id: keyof NotificationPrefs; label: string; description: string; icon: LucideIconData }[] = [
-    { id: 'email', label: 'Notificaciones por email', description: 'Recibe un resumen diario de tu actividad', icon: Mail },
-    { id: 'push', label: 'Notificaciones push', description: 'Recibe alertas en tiempo real en tu navegador', icon: Bell },
-    { id: 'weekly', label: 'Resumen semanal', description: 'Recibe un informe cada lunes con tus estadísticas', icon: Globe },
-    { id: 'mentions', label: 'Solo menciones', description: 'Solo notificar cuando alguien te mencione', icon: Smartphone },
+  readonly notificationItems: {
+    id: keyof NotificationPrefs;
+    label: string;
+    description: string;
+    icon: LucideIconData;
+  }[] = [
+    {
+      id: 'email',
+      label: 'Notificaciones por email',
+      description: 'Recibe un resumen diario de tu actividad',
+      icon: Mail,
+    },
+    {
+      id: 'push',
+      label: 'Notificaciones push',
+      description: 'Recibe alertas en tiempo real en tu navegador',
+      icon: Bell,
+    },
+    {
+      id: 'weekly',
+      label: 'Resumen semanal',
+      description: 'Recibe un informe cada lunes con tus estadísticas',
+      icon: Globe,
+    },
+    {
+      id: 'mentions',
+      label: 'Solo menciones',
+      description: 'Solo notificar cuando alguien te mencione',
+      icon: Smartphone,
+    },
   ];
 
   // ===== Seguridad =====

@@ -19,11 +19,10 @@ namespace Zezame.Api.Services {
             if (await _users.GetByEmailAsync(email) != null)
                 throw new InvalidOperationException("Email ya registrado");
 
-            // Solo Admin puede crear Coordinadores o Admins
-            //var assignedRole = UserRole.User;
-            //if (dto.Role.HasValue && creatorRole == UserRole.Admin) {
-            var assignedRole = dto.Role!.Value;
-            //}
+            // El registro público SIEMPRE crea un usuario básico.
+            // Los roles elevados (Coordinator/Admin) deben asignarse por un Admin
+            // mediante un flujo administrativo dedicado (no desde el registro).
+            var assignedRole = UserRole.User;
 
             var user = new User {
                 Email = email,

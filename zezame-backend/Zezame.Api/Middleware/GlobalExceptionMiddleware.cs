@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using Zezame.Api.Exceptions;
 
 namespace Zezame.Api.Middleware {
     public class GlobalExceptionMiddleware(RequestDelegate next) {
@@ -16,6 +17,10 @@ namespace Zezame.Api.Middleware {
         private static Task HandleExceptionAsync(HttpContext context, Exception exception) {
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = exception switch {
+                UnauthorizedException => (int)HttpStatusCode.Unauthorized,
+                UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
+                ForbiddenException => (int)HttpStatusCode.Forbidden,
+                NotFoundException => (int)HttpStatusCode.NotFound,
                 KeyNotFoundException => (int)HttpStatusCode.NotFound,
                 InvalidOperationException => (int)HttpStatusCode.BadRequest,
                 _ => (int)HttpStatusCode.InternalServerError

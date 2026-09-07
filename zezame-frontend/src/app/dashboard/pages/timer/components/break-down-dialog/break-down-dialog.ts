@@ -107,7 +107,20 @@ export class BreakDownDialog implements OnChanges {
     this.reports.getCalendar(this.monthParam()).subscribe({
       next: (cal) => {
         const labels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-        const monthNames = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        const monthNames = [
+          'ene',
+          'feb',
+          'mar',
+          'abr',
+          'may',
+          'jun',
+          'jul',
+          'ago',
+          'sep',
+          'oct',
+          'nov',
+          'dic',
+        ];
         const sel = new Date(this.now);
         const dow = (sel.getDay() + 6) % 7; // 0 = lunes
         const monday = new Date(sel);

@@ -47,8 +47,9 @@ namespace Zezame.Api.Controllers {
             return Ok(await _reports.GetWeeklyAsync(UserGuid(), y, m));
         }
 
-        // GET /api/reports/team?month=YYYY-MM
+        // GET /api/reports/team?month=YYYY-MM (solo coordinadores/admins)
         [HttpGet("team")]
+        [Authorize(Policy = "RequireCoordinator")]
         public async Task<ActionResult<IEnumerable<TeamMemberDto>>> Team([FromQuery] string month) {
             var (y, m) = ParseMonth(month);
             return Ok(await _reports.GetTeamAsync(y, m));

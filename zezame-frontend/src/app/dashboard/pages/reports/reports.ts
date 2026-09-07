@@ -100,10 +100,42 @@ export class Reports implements OnInit {
     const s = this.summary();
     const trend = (c: number): 'up' | 'down' => (c >= 0 ? 'up' : 'down');
     return [
-      { label: 'Horas Totales', value: `${s?.totalHours ?? 0}h`, change: s?.totalChange ?? 0, icon: Clock, color: 'coral', emoji: '⏱️', trend: trend(s?.totalChange ?? 0) },
-      { label: 'Promedio Diario', value: `${s?.avgDailyHours ?? 0}h`, change: s?.avgChange ?? 0, icon: BarChart3, color: 'cyan', emoji: '📊', trend: trend(s?.avgChange ?? 0) },
-      { label: 'Productividad', value: `${s?.productivity ?? 0}%`, change: s?.productivityChange ?? 0, icon: Zap, color: 'yellow', emoji: '⚡', trend: trend(s?.productivityChange ?? 0) },
-      { label: 'Tiempo Focus', value: `${s?.focusHours ?? 0}h`, change: s?.focusChange ?? 0, icon: Target, color: 'lime', emoji: '🎯', trend: trend(s?.focusChange ?? 0) },
+      {
+        label: 'Horas Totales',
+        value: `${s?.totalHours ?? 0}h`,
+        change: s?.totalChange ?? 0,
+        icon: Clock,
+        color: 'coral',
+        emoji: '⏱️',
+        trend: trend(s?.totalChange ?? 0),
+      },
+      {
+        label: 'Promedio Diario',
+        value: `${s?.avgDailyHours ?? 0}h`,
+        change: s?.avgChange ?? 0,
+        icon: BarChart3,
+        color: 'cyan',
+        emoji: '📊',
+        trend: trend(s?.avgChange ?? 0),
+      },
+      {
+        label: 'Productividad',
+        value: `${s?.productivity ?? 0}%`,
+        change: s?.productivityChange ?? 0,
+        icon: Zap,
+        color: 'yellow',
+        emoji: '⚡',
+        trend: trend(s?.productivityChange ?? 0),
+      },
+      {
+        label: 'Tiempo Focus',
+        value: `${s?.focusHours ?? 0}h`,
+        change: s?.focusChange ?? 0,
+        icon: Target,
+        color: 'lime',
+        emoji: '🎯',
+        trend: trend(s?.focusChange ?? 0),
+      },
     ];
   });
 
@@ -121,8 +153,8 @@ export class Reports implements OnInit {
     });
   });
 
-  pieTotalHours = computed(() =>
-    Math.round(this.byProject().reduce((sum, p) => sum + p.hours, 0) * 10) / 10,
+  pieTotalHours = computed(
+    () => Math.round(this.byProject().reduce((sum, p) => sum + p.hours, 0) * 10) / 10,
   );
 
   dotClass(i: number): string {
@@ -130,8 +162,8 @@ export class Reports implements OnInit {
   }
 
   // ===== Weekly =====
-  weeklyTotal = computed(() =>
-    Math.round(this.weekly().reduce((s, w) => s + w.hours, 0) * 10) / 10,
+  weeklyTotal = computed(
+    () => Math.round(this.weekly().reduce((s, w) => s + w.hours, 0) * 10) / 10,
   );
 
   // ===== Daily activity =====
@@ -148,7 +180,9 @@ export class Reports implements OnInit {
   ngOnInit(): void {
     const month = `${this.year}-${String(this.month).padStart(2, '0')}`;
     this.reports.getSummary(month).subscribe({ next: (s) => this.summary.set(s), error: () => {} });
-    this.reports.getByProject(month).subscribe({ next: (b) => this.byProject.set(b), error: () => {} });
+    this.reports
+      .getByProject(month)
+      .subscribe({ next: (b) => this.byProject.set(b), error: () => {} });
     this.reports.getWeekly(month).subscribe({ next: (w) => this.weekly.set(w), error: () => {} });
     this.reports.getTeam(month).subscribe({ next: (t) => this.team.set(t), error: () => {} });
     this.reports.getCalendar(month).subscribe({ next: (d) => this.daily.set(d), error: () => {} });

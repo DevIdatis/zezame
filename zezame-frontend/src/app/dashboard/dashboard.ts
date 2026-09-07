@@ -54,9 +54,7 @@ export class Dashboard {
   private currentUser = signal<User | null>(null);
 
   constructor() {
-    this.auth.currentUser$
-      .pipe(takeUntilDestroyed())
-      .subscribe((u) => this.currentUser.set(u));
+    this.auth.currentUser$.pipe(takeUntilDestroyed()).subscribe((u) => this.currentUser.set(u));
   }
 
   // Placeholders cosméticos (aún sin lógica de negocio: racha/nivel)

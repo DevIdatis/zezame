@@ -117,10 +117,34 @@ export class Timer implements OnInit, OnDestroy {
 
   // TODO(Fase 6): reemplazar por actividad reciente real del backend
   readonly mockRecentActivity: RecentActivity[] = [
-    { id: 1, project: 'Diseño Web Zezame', task: 'Diseño de landing page', duration: '2h 15m', time: 'Hoy, 10:30' },
-    { id: 2, project: 'App Mobile React', task: 'Implementación de auth', duration: '1h 45m', time: 'Hoy, 08:15' },
-    { id: 3, project: 'Dashboard Analytics', task: 'Gráficos de rendimiento', duration: '3h 20m', time: 'Ayer, 14:00' },
-    { id: 4, project: 'API Backend', task: 'Endpoints de usuarios', duration: '2h 00m', time: 'Ayer, 09:30' },
+    {
+      id: 1,
+      project: 'Diseño Web Zezame',
+      task: 'Diseño de landing page',
+      duration: '2h 15m',
+      time: 'Hoy, 10:30',
+    },
+    {
+      id: 2,
+      project: 'App Mobile React',
+      task: 'Implementación de auth',
+      duration: '1h 45m',
+      time: 'Hoy, 08:15',
+    },
+    {
+      id: 3,
+      project: 'Dashboard Analytics',
+      task: 'Gráficos de rendimiento',
+      duration: '3h 20m',
+      time: 'Ayer, 14:00',
+    },
+    {
+      id: 4,
+      project: 'API Backend',
+      task: 'Endpoints de usuarios',
+      duration: '2h 00m',
+      time: 'Ayer, 09:30',
+    },
   ];
 
   // Signals para estadísticas reactivas
@@ -318,9 +342,7 @@ export class Timer implements OnInit, OnDestroy {
   start(): void {
     const project = this.currentProject();
     const activity = this.currentActivity();
-    this.time
-      .start(activity?.name, project?.id, activity?.id ?? undefined)
-      .subscribe();
+    this.time.start(activity?.name, project?.id, activity?.id ?? undefined).subscribe();
   }
 
   pause(): void {

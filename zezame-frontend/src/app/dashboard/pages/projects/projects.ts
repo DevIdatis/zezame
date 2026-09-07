@@ -64,9 +64,7 @@ export class Projects implements OnInit {
     return this.projects().filter((p) => {
       const matchesFilter = f === 'all' || p.status.toLowerCase() === f;
       const matchesSearch =
-        !q ||
-        p.name.toLowerCase().includes(q) ||
-        (p.description ?? '').toLowerCase().includes(q);
+        !q || p.name.toLowerCase().includes(q) || (p.description ?? '').toLowerCase().includes(q);
       return matchesFilter && matchesSearch;
     });
   });
