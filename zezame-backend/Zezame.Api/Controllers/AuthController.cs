@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Zezame.Api.Services;
+using Zezame.Api.Models.DTOs;
 using static Zezame.Api.Models.AuthDtos;
 
 namespace Zezame.Api.Controllers {
@@ -19,5 +21,14 @@ namespace Zezame.Api.Controllers {
         [HttpPost("login")]
         public async Task<ActionResult<TokenDto>> Login(LoginDto dto)
             => Ok(await _auth.LoginAsync(dto));
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto dto) {
+            var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                ?? throw new UnauthorizedAccessException("No se encontró el UserId en los claims");
+            await _auth.ChangePasswordAsync(Guid.Parse(claim.Value), dto);
+            return NoContent();
+        }
     }
 }

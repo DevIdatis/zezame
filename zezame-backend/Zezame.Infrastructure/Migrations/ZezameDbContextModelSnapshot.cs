@@ -288,6 +288,10 @@ namespace Zezame.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("isdeleted");
 
+                    b.Property<string>("Language")
+                        .HasColumnType("text")
+                        .HasColumnName("language");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -297,6 +301,10 @@ namespace Zezame.Infrastructure.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer")
                         .HasColumnName("role");
+
+                    b.Property<string>("Timezone")
+                        .HasColumnType("text")
+                        .HasColumnName("timezone");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

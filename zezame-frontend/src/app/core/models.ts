@@ -147,3 +147,25 @@ export interface TeamMember {
   hours: number;
   productivity: number;
 }
+
+// Perfil (GET/PUT /api/users/me)
+export interface Profile {
+  id: string;
+  email: string;
+  fullName: string;
+  role: string;
+  timezone: string | null;
+  language: string | null;
+}
+
+export interface UpdateProfileRequest {
+  fullName?: string;
+  email?: string;
+  timezone?: string;
+  language?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}

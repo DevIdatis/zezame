@@ -6,6 +6,8 @@ namespace Zezame.Domain.Entities {
         public string PasswordHash { get; set; } = null!;
         public string FullName { get; set; } = null!;
         public UserRole Role { get; set; } = UserRole.User;
+        public string? Timezone { get; set; }
+        public string? Language { get; set; }
 
         // Relaciones
         public ICollection<Project> OwnedProjects { get; set; } = [];

@@ -98,4 +98,10 @@ export class AuthService {
   getToken(): string | null {
     return this.isBrowser ? localStorage.getItem('token') : null;
   }
+
+  // Actualiza en memoria el usuario actual (p. ej. tras editar el perfil)
+  patchUser(patch: Partial<User>): void {
+    const current = this.user$.value;
+    if (current) this.user$.next({ ...current, ...patch });
+  }
 }

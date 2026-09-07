@@ -2,6 +2,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Zezame.Api.Models.DTOs;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
 using static Zezame.Api.Models.AuthDtos;
@@ -34,6 +35,17 @@ namespace Zezame.Api.Services {
 
             await _users.AddAsync(user);
             return GenerateToken(user);
+        }
+
+        public async Task ChangePasswordAsync(Guid userId, ChangePasswordDto dto) {
+            var user = await _users.GetByIdAsync(userId)
+                ?? throw new UnauthorizedAccessException("Usuario no encontrado");
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                throw new UnauthorizedAccessException("La contraseña actual no es correcta");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            await _users.UpdateAsync(user);
         }
 
         public async Task<TokenDto> LoginAsync(LoginDto dto) {
