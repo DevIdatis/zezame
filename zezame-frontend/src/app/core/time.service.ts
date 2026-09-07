@@ -59,10 +59,10 @@ export class TimeService {
     return this.listCache.get(key)!;
   }
 
-  start(description?: string): Observable<void> {
+  start(description?: string, projectId?: string, activityId?: string): Observable<void> {
     this.invalidateTodayCache();
     return this.http
-      .post<void>(`${this.api}/timeEntries/start`, { description })
+      .post<void>(`${this.api}/timeEntries/start`, { description, projectId, activityId })
       .pipe(tap(() => this.syncCurrent()));
   }
 

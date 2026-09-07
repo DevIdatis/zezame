@@ -16,20 +16,16 @@ import {
 } from 'lucide-angular';
 import { TimeService } from '../../../core/time.service';
 import { AuthService } from '../../../core/auth.service';
-import { BehaviorSubject, distinctUntilChanged, Subject, Subscription, takeUntil } from 'rxjs';
-import { EntryType, TimeEntry } from '../../../core/models';
-import { AsyncPipe } from '@angular/common';
+import { ProjectService } from '../../../core/project.service';
+import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
+import { EntryType, Project, TimeEntry } from '../../../core/models';
 import { BreakdownPeriod, BreakDownDialog } from './components/break-down-dialog/break-down-dialog';
-import { AssignActivityDialog } from './components/assign-activity-dialog/assign-activity-dialog';
-interface Project {
-  id: number;
-  name: string;
-  color: string;
-  hours: number;
-  progress: number;
-}
+import {
+  AssignActivityDialog,
+  AssignSelection,
+} from './components/assign-activity-dialog/assign-activity-dialog';
 
-interface Activity {
+interface RecentActivity {
   id: number;
   project: string;
   task: string;
@@ -57,6 +53,7 @@ type TimerStatus = 'idle' | 'working' | 'paused';
 export class Timer implements OnInit, OnDestroy {
   private time = inject(TimeService);
   protected auth = inject(AuthService);
+  private projectService = inject(ProjectService);
 
   private destroy$ = new Subject<void>();
   private intervalId: number | null = null;
@@ -93,8 +90,18 @@ export class Timer implements OnInit, OnDestroy {
   isTimerRunning = signal(false);
   timerTime = signal('00:45:23');
   breakdownPeriod = signal<BreakdownPeriod | null>(null);
-  currentTask = signal('Diseño de componentes UI');
+  currentTask = signal('Sin actividad');
   assignOpen = signal(false);
+
+  // Proyectos reales del usuario (para "Proyectos Activos" y el diálogo de asociación)
+  projects = signal<Project[]>([]);
+  // Actividad asociada a la próxima sesión (id real o null si es texto libre)
+  currentActivity = signal<{ id: string | null; name: string } | null>(null);
+
+  // Proyectos en el formato que espera el diálogo de asociación
+  dialogProjects = computed(() =>
+    this.projects().map((p) => ({ id: p.id, name: p.name, color: p.color })),
+  );
 
   // Meta del día
   readonly goalHours = 6;
@@ -108,15 +115,8 @@ export class Timer implements OnInit, OnDestroy {
     return remaining > 0 ? this.formatHm(remaining) : null;
   });
 
-  // Mock data — TODO(Fase 3/6): reemplazar por proyectos y actividad reales del backend
-  readonly mockProjects: Project[] = [
-    { id: 1, name: 'Diseño Web Zezame', color: 'from-coral to-yellow', hours: 24.5, progress: 75 },
-    { id: 2, name: 'App Mobile React', color: 'from-cyan to-lime', hours: 18.2, progress: 45 },
-    { id: 3, name: 'Dashboard Analytics', color: 'from-yellow to-lime', hours: 12.8, progress: 90 },
-    { id: 4, name: 'API Backend', color: 'from-lime to-cyan', hours: 8.3, progress: 30 },
-  ];
-
-  readonly mockRecentActivity: Activity[] = [
+  // TODO(Fase 6): reemplazar por actividad reciente real del backend
+  readonly mockRecentActivity: RecentActivity[] = [
     { id: 1, project: 'Diseño Web Zezame', task: 'Diseño de landing page', duration: '2h 15m', time: 'Hoy, 10:30' },
     { id: 2, project: 'App Mobile React', task: 'Implementación de auth', duration: '1h 45m', time: 'Hoy, 08:15' },
     { id: 3, project: 'Dashboard Analytics', task: 'Gráficos de rendimiento', duration: '3h 20m', time: 'Ayer, 14:00' },
@@ -164,11 +164,24 @@ export class Timer implements OnInit, OnDestroy {
     },
   ]);
 
-  currentProject = signal<Project | null>(this.mockProjects[0] ?? null);
+  currentProject = signal<Project | null>(null);
 
   ngOnInit(): void {
     this.subscribeToTimer();
     this.loadToday();
+    this.loadProjects();
+  }
+
+  private loadProjects(): void {
+    this.projectService.list().subscribe({
+      next: (list) => {
+        this.projects.set(list);
+        if (!this.currentProject() && list.length > 0) {
+          this.currentProject.set(list[0]);
+        }
+      },
+      error: (err) => console.error('Error cargando proyectos:', err),
+    });
   }
 
   ngOnDestroy(): void {
@@ -259,10 +272,10 @@ export class Timer implements OnInit, OnDestroy {
     this.assignOpen.set(false);
   }
 
-  // TODO(Fase 4): asociar proyecto/actividad reales a la entrada al iniciar el timer
-  onAssign(event: { projectId: number; activityName: string }) {
-    const project = this.mockProjects.find((p) => p.id === event.projectId);
+  onAssign(event: AssignSelection) {
+    const project = this.projects().find((p) => p.id === event.projectId);
     if (project) this.currentProject.set(project);
+    this.currentActivity.set({ id: event.activityId, name: event.activityName });
     this.currentTask.set(event.activityName);
   }
 
@@ -303,7 +316,11 @@ export class Timer implements OnInit, OnDestroy {
   }
 
   start(): void {
-    this.time.start().subscribe();
+    const project = this.currentProject();
+    const activity = this.currentActivity();
+    this.time
+      .start(activity?.name, project?.id, activity?.id ?? undefined)
+      .subscribe();
   }
 
   pause(): void {

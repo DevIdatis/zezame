@@ -46,6 +46,10 @@ namespace Zezame.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<string>("Emoji")
+                        .HasColumnType("text")
+                        .HasColumnName("emoji");
+
                     b.Property<int?>("EstimatedMinutes")
                         .HasColumnType("integer")
                         .HasColumnName("estimatedminutes");

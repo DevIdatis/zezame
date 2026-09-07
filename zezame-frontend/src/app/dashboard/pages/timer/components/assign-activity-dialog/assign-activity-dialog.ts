@@ -1,43 +1,29 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { LucideAngularModule, Search, Plus, Check, Folder, Sparkles, X } from 'lucide-angular';
+import { ActivityService } from '../../../../../core/activity.service';
+import { Activity } from '../../../../../core/models';
 
 export interface ProjectOption {
-  id: number;
+  id: string;
   name: string;
   color: string;
 }
 
-interface Activity {
-  id: number;
-  name: string;
-  emoji: string;
+export interface AssignSelection {
+  projectId: string;
+  activityId: string | null;
+  activityName: string;
 }
-
-// TODO(Fase 4): sustituir por actividades reales por proyecto (GET /api/activities/by-project/{id})
-const MOCK_ACTIVITIES: Record<number, Activity[]> = {
-  1: [
-    { id: 11, name: 'Diseño de landing page', emoji: '🎨' },
-    { id: 12, name: 'Diseño de componentes UI', emoji: '🧩' },
-    { id: 13, name: 'Prototipado en Figma', emoji: '✏️' },
-    { id: 14, name: 'Revisión con cliente', emoji: '💬' },
-  ],
-  2: [
-    { id: 21, name: 'Implementación de auth', emoji: '🔐' },
-    { id: 22, name: 'Navegación y rutas', emoji: '🧭' },
-    { id: 23, name: 'Integración API', emoji: '🔌' },
-    { id: 24, name: 'Testing en dispositivos', emoji: '📱' },
-  ],
-  3: [
-    { id: 31, name: 'Gráficos de rendimiento', emoji: '📊' },
-    { id: 32, name: 'Filtros avanzados', emoji: '🔍' },
-    { id: 33, name: 'Exportar reportes', emoji: '📤' },
-  ],
-  4: [
-    { id: 41, name: 'Endpoints de usuarios', emoji: '👥' },
-    { id: 42, name: 'Optimización de queries', emoji: '⚡' },
-    { id: 43, name: 'Documentación API', emoji: '📚' },
-  ],
-};
 
 @Component({
   selector: 'app-assign-activity-dialog',
@@ -46,12 +32,14 @@ const MOCK_ACTIVITIES: Record<number, Activity[]> = {
   styleUrl: './assign-activity-dialog.scss',
 })
 export class AssignActivityDialog implements OnChanges {
+  private activityService = inject(ActivityService);
+
   @Input() open = false;
   @Input() projects: ProjectOption[] = [];
-  @Input() initialProjectId?: number;
+  @Input() initialProjectId?: string;
 
   @Output() openChange = new EventEmitter<boolean>();
-  @Output() assign = new EventEmitter<{ projectId: number; activityName: string }>();
+  @Output() assign = new EventEmitter<AssignSelection>();
 
   Search = Search;
   Plus = Plus;
@@ -60,15 +48,13 @@ export class AssignActivityDialog implements OnChanges {
   Sparkles = Sparkles;
   X = X;
 
-  selectedProjectId = signal<number | null>(null);
-  selectedActivityId = signal<number | null>(null);
+  selectedProjectId = signal<string | null>(null);
+  selectedActivityId = signal<string | null>(null);
   customActivity = signal('');
   search = signal('');
 
-  activities = computed<Activity[]>(() => {
-    const id = this.selectedProjectId();
-    return id != null ? (MOCK_ACTIVITIES[id] ?? []) : [];
-  });
+  activities = signal<Activity[]>([]);
+  loadingActivities = signal(false);
 
   filtered = computed<Activity[]>(() => {
     const q = this.search().toLowerCase();
@@ -80,21 +66,40 @@ export class AssignActivityDialog implements OnChanges {
   );
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Al abrirse, inicializa la selección igual que el diálogo de React
+    // Al abrirse, inicializa la selección y carga actividades del proyecto
     if (changes['open'] && this.open) {
-      this.selectedProjectId.set(this.initialProjectId ?? this.projects[0]?.id ?? null);
+      const projectId = this.initialProjectId ?? this.projects[0]?.id ?? null;
       this.selectedActivityId.set(null);
       this.customActivity.set('');
       this.search.set('');
+      this.setProject(projectId);
     }
   }
 
-  selectProject(id: number): void {
-    this.selectedProjectId.set(id);
+  selectProject(id: string): void {
     this.selectedActivityId.set(null);
+    this.setProject(id);
   }
 
-  selectActivity(id: number): void {
+  private setProject(id: string | null): void {
+    this.selectedProjectId.set(id);
+    this.activities.set([]);
+    if (!id) return;
+
+    this.loadingActivities.set(true);
+    this.activityService.byProject(id).subscribe({
+      next: (list) => {
+        this.activities.set(list);
+        this.loadingActivities.set(false);
+      },
+      error: (err) => {
+        console.error('Error cargando actividades:', err);
+        this.loadingActivities.set(false);
+      },
+    });
+  }
+
+  selectActivity(id: string): void {
     this.selectedActivityId.set(id);
     this.customActivity.set('');
   }
@@ -113,13 +118,21 @@ export class AssignActivityDialog implements OnChanges {
   }
 
   handleAssign(): void {
-    const name =
-      this.customActivity().trim() ||
-      this.activities().find((a) => a.id === this.selectedActivityId())?.name;
     const project = this.selectedProject();
-    if (!project || !name) return;
+    if (!project) return;
 
-    this.assign.emit({ projectId: project.id, activityName: name });
+    const custom = this.customActivity().trim();
+    let activityId: string | null = null;
+    let activityName = custom;
+
+    if (!custom) {
+      const selected = this.activities().find((a) => a.id === this.selectedActivityId());
+      if (!selected) return;
+      activityId = selected.id;
+      activityName = selected.name;
+    }
+
+    this.assign.emit({ projectId: project.id, activityId, activityName });
     this.close();
   }
 

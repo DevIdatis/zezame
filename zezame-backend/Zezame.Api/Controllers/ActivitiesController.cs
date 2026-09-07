@@ -31,6 +31,12 @@ namespace Zezame.Api.Controllers {
             return Ok(activities);
         }
 
+        [HttpGet("by-project/{projectId}")]
+        public async Task<ActionResult<IEnumerable<ActivityDto>>> GetByProject(Guid projectId) {
+            var activities = await _activityService.GetByProjectAsync(projectId);
+            return Ok(activities);
+        }
+
         private Guid GetCurrentUserId() {
             var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (claim == null)

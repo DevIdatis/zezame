@@ -87,9 +87,13 @@
                 />
               </div>
               <div class="space-y-2 max-h-52 overflow-y-auto pr-2">
-                @if (filtered().length === 0) {
+                @if (loadingActivities()) {
                   <p class="text-sm text-muted-foreground text-center py-6">
-                    Sin actividades para esta búsqueda
+                    Cargando actividades...
+                  </p>
+                } @else if (filtered().length === 0) {
+                  <p class="text-sm text-muted-foreground text-center py-6">
+                    Sin actividades. Crea una nueva abajo 👇
                   </p>
                 }
                 @for (a of filtered(); track a.id) {
@@ -102,7 +106,7 @@
                         : 'bg-muted/40 border-transparent hover:bg-muted/60'
                     "
                   >
-                    <span class="text-xl">{{ a.emoji }}</span>
+                    <span class="text-xl">{{ a.emoji || '🧩' }}</span>
                     <span class="font-medium text-foreground flex-1">{{ a.name }}</span>
                     @if (a.id === selectedActivityId()) {
                       <lucide-icon [img]="Check" class="w-4 h-4 text-cyan"></lucide-icon>

@@ -162,10 +162,10 @@
         </button>
       </div>
       <div class="px-6 pb-6 space-y-4">
-        @if (mockProjects.length === 0) {
+        @if (projects().length === 0) {
           <p class="text-center text-muted-foreground py-10">No hay proyectos activos.</p>
         } @else {
-          @for (project of mockProjects; track project.id) {
+          @for (project of projects(); track project.id) {
             <div
               class="p-4 rounded-xl bg-gradient-to-r from-muted/50 to-transparent border border-border/30 hover:border-coral/30 transition-all cursor-pointer group"
             >
@@ -269,7 +269,7 @@
 
 <app-assign-activity-dialog
   [open]="assignOpen()"
-  [projects]="mockProjects"
+  [projects]="dialogProjects()"
   [initialProjectId]="currentProject()?.id"
   (openChange)="!$event && closeAssign()"
   (assign)="onAssign($event)"

@@ -25,6 +25,7 @@ namespace Zezame.Api.Services {
             var activity = new Activity {
                 Name = dto.Name,
                 Description = dto.Description,
+                Emoji = dto.Emoji,
                 ProjectId = dto.ProjectId,
                 AssignedToId = dto.AssignedToId,
                 CreatedById = coordinatorId,
@@ -40,10 +41,16 @@ namespace Zezame.Api.Services {
             return activities.Select(MapToDto);
         }
 
+        public async Task<IEnumerable<ActivityDto>> GetByProjectAsync(Guid projectId) {
+            var activities = await _activities.GetByProjectAsync(projectId);
+            return activities.Select(MapToDto);
+        }
+
         private static ActivityDto MapToDto(Activity a) => new(
             a.Id,
             a.Name,
             a.Description,
+            a.Emoji,
             a.Status.ToString(),
             a.ProjectId,
             a.Project?.Name ?? "Unknown",

@@ -68,3 +68,27 @@ export interface UpdateProjectRequest {
   deadline?: string | null;
   status?: string | null;
 }
+
+// Coincide con ActivityDto del backend
+export interface Activity {
+  id: string;
+  name: string;
+  description: string | null;
+  emoji: string | null;
+  status: string;
+  projectId: string;
+  projectName: string;
+  assignedToName: string | null;
+  estimatedMinutes: number | null;
+  actualMinutes: number | null;
+  createdAt: string;
+}
+
+export interface CreateActivityRequest {
+  name: string;
+  description?: string | null;
+  projectId: string;
+  emoji?: string | null;
+  assignedToId?: string | null;
+  estimatedMinutes?: number | null;
+}

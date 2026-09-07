@@ -5,6 +5,7 @@ namespace Zezame.Domain.Entities {
     public class Activity : BaseEntity {
         public string Name { get; set; } = null!; // "Diseño de landing page"
         public string? Description { get; set; }
+        public string? Emoji { get; set; }
         public ActivityStatus Status { get; set; } = ActivityStatus.Todo;
         public int? EstimatedMinutes { get; set; } // Estimación opcional
 
