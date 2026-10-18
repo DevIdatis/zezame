@@ -127,7 +127,7 @@ namespace Zezame.Api.Services {
             var entries = await _entries.GetAllInRangeAsync(start, start.AddMonths(1).AddSeconds(-1));
 
             var user = await _users.GetByIdAsync(userId);
-            if (user?.Role != UserRole.Admin) {
+            if (user?.Role is not (OrganizationRole.Admin or OrganizationRole.Owner)) {
                 var team = (await _projects.GetTeammateUserIdsAsync(userId)).ToHashSet();
                 entries = entries.Where(e => team.Contains(e.UserId)).ToList();
             }

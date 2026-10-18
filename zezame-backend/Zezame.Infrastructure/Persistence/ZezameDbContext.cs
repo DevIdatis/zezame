@@ -5,6 +5,7 @@ using Zezame.Domain.Entities;
 
 namespace Zezame.Infrastructure.Persistence {
     public class ZezameDbContext : DbContext {
+        public DbSet<Organization> Organizations => Set<Organization>();
         public DbSet<User> Users => Set<User>();
         public DbSet<Project> Projects => Set<Project>();
         public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
@@ -32,18 +33,53 @@ namespace Zezame.Infrastructure.Persistence {
                 }
             }
 
-            //Filtro global de borrado lógico
+            // Filtro global de borrado lógico (soft-delete): ninguna consulta
+            // devuelve registros con IsDeleted = true salvo que se ignore el filtro
+            // explícitamente. Todas las entidades son consistentes (comparten IsDeleted),
+            // así que los Include() entre ellas no generan avisos de EF.
+            modelBuilder.Entity<Organization>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<Project>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<ProjectMember>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<Activity>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<TimeEntry>().HasQueryFilter(e => !e.IsDeleted);
 
-
             // Índices únicos
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+
+            // ===== Relaciones de organización (tenant) =====
+            // Restrict en todas: una organización no se borra físicamente mientras
+            // tenga datos (se usa borrado lógico). El aislamiento efectivo llega en Fase 3.
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Organization)
+                .WithMany(o => o.Users)
+                .HasForeignKey(u => u.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict); // OrganizationId es nullable (Platform Admin)
+
+            modelBuilder.Entity<Project>()
+                .HasOne(p => p.Organization)
+                .WithMany(o => o.Projects)
+                .HasForeignKey(p => p.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Activity>()
+                .HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(a => a.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TimeEntry>()
+                .HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(te => te.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<User>().HasIndex(u => u.OrganizationId);
+            modelBuilder.Entity<Project>().HasIndex(p => p.OrganizationId);
+            modelBuilder.Entity<Activity>().HasIndex(a => a.OrganizationId);
+            modelBuilder.Entity<TimeEntry>().HasIndex(te => te.OrganizationId);
 
             // Relación User - Project (Owner)
             modelBuilder.Entity<Project>()

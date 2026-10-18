@@ -15,6 +15,9 @@ namespace Zezame.Domain.Entities {
         public ProjectStatus Status { get; set; } = ProjectStatus.Active;
         public DateTime? Deadline { get; set; }
         public int? ClientId { get; set; }
+        // Organización propietaria del proyecto (tenant).
+        public Guid OrganizationId { get; set; }
+        public Organization Organization { get; set; } = null!;
 
         // Relaciones
         public Guid OwnerId { get; set; }

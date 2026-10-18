@@ -9,8 +9,9 @@ using static Zezame.Api.Models.AuthDtos;
 using static Zezame.Domain.Entities.User;
 
 namespace Zezame.Api.Services {
-    public class AuthService(IUserRepository users, IConfiguration cfg) {
+    public class AuthService(IUserRepository users, IRepository<Organization> orgs, IConfiguration cfg) {
         private readonly IUserRepository _users = users;
+        private readonly IRepository<Organization> _orgs = orgs;
         private readonly IConfiguration _cfg = cfg;
 
         public async Task<TokenDto> RegisterAsync(RegisterDto dto) {
@@ -19,16 +20,20 @@ namespace Zezame.Api.Services {
             if (await _users.GetByEmailAsync(email) != null)
                 throw new InvalidOperationException("Email ya registrado");
 
-            // El registro público SIEMPRE crea un usuario básico.
-            // Los roles elevados (Coordinator/Admin) deben asignarse por un Admin
-            // mediante un flujo administrativo dedicado (no desde el registro).
-            var assignedRole = UserRole.User;
+            // El registro público crea una organización nueva y convierte al
+            // registrante en su Owner. El resto de usuarios entrará por invitación.
+            var organization = new Organization {
+                Name = dto.OrganizationName,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _orgs.AddAsync(organization);
 
             var user = new User {
                 Email = email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 FullName = dto.FullName,
-                Role = assignedRole,
+                Role = OrganizationRole.Owner,
+                OrganizationId = organization.Id,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -68,7 +73,10 @@ namespace Zezame.Api.Services {
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Name, user.FullName),
                 new Claim(ClaimTypes.Role, user.Role.ToString()), // ROL EN JWT
-                new Claim("role", ((int)user.Role).ToString()) // Para fácil parsing en frontend
+                new Claim("role", ((int)user.Role).ToString()), // Para fácil parsing en frontend
+                // Claim de organización (tenant): lo consumirá la resolución de tenant en Fase 3.
+                new Claim("org_id", user.OrganizationId?.ToString() ?? string.Empty),
+                new Claim("is_platform_admin", user.IsPlatformAdmin ? "true" : "false")
             };
 
             var expires = DateTime.UtcNow.AddMinutes(

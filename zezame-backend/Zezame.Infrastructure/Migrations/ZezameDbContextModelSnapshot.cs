@@ -63,6 +63,10 @@ namespace Zezame.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizationid");
+
                     b.Property<Guid>("ProjectId")
                         .HasColumnType("uuid")
                         .HasColumnName("projectid");
@@ -81,9 +85,44 @@ namespace Zezame.Infrastructure.Migrations
 
                     b.HasIndex("CreatedById");
 
+                    b.HasIndex("OrganizationId");
+
                     b.HasIndex("ProjectId", "Status");
 
                     b.ToTable("activities");
+                });
+
+            modelBuilder.Entity("Zezame.Domain.Entities.Organization", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("uuid_generate_v4()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("createdat")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isdeleted");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updatedat");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("organizations", (string)null);
                 });
 
             modelBuilder.Entity("Zezame.Domain.Entities.Project", b =>
@@ -127,6 +166,10 @@ namespace Zezame.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizationid");
+
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid")
                         .HasColumnName("ownerid");
@@ -140,6 +183,8 @@ namespace Zezame.Infrastructure.Migrations
                         .HasColumnName("updatedat");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("OwnerId");
 
@@ -221,6 +266,10 @@ namespace Zezame.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("isdeleted");
 
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizationid");
+
                     b.Property<Guid?>("ProjectId")
                         .HasColumnType("uuid")
                         .HasColumnName("projectid");
@@ -246,6 +295,8 @@ namespace Zezame.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ActivityId");
+
+                    b.HasIndex("OrganizationId");
 
                     b.HasIndex("ProjectId");
 
@@ -288,9 +339,17 @@ namespace Zezame.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("isdeleted");
 
+                    b.Property<bool>("IsPlatformAdmin")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isplatformadmin");
+
                     b.Property<string>("Language")
                         .HasColumnType("text")
                         .HasColumnName("language");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organizationid");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -315,6 +374,8 @@ namespace Zezame.Infrastructure.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("OrganizationId");
+
                     b.ToTable("users", (string)null);
                 });
 
@@ -328,6 +389,12 @@ namespace Zezame.Infrastructure.Migrations
                     b.HasOne("Zezame.Domain.Entities.User", "CreatedBy")
                         .WithMany("AssignedActivities")
                         .HasForeignKey("CreatedById");
+
+                    b.HasOne("Zezame.Domain.Entities.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Zezame.Domain.Entities.Project", "Project")
                         .WithMany("Activities")
@@ -344,11 +411,19 @@ namespace Zezame.Infrastructure.Migrations
 
             modelBuilder.Entity("Zezame.Domain.Entities.Project", b =>
                 {
+                    b.HasOne("Zezame.Domain.Entities.Organization", "Organization")
+                        .WithMany("Projects")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Zezame.Domain.Entities.User", "Owner")
                         .WithMany("OwnedProjects")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Organization");
 
                     b.Navigation("Owner");
                 });
@@ -379,6 +454,12 @@ namespace Zezame.Infrastructure.Migrations
                         .HasForeignKey("ActivityId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Zezame.Domain.Entities.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Zezame.Domain.Entities.Project", "Project")
                         .WithMany("TimeEntries")
                         .HasForeignKey("ProjectId")
@@ -397,9 +478,26 @@ namespace Zezame.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Zezame.Domain.Entities.User", b =>
+                {
+                    b.HasOne("Zezame.Domain.Entities.Organization", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("Zezame.Domain.Entities.Activity", b =>
                 {
                     b.Navigation("TimeEntries");
+                });
+
+            modelBuilder.Entity("Zezame.Domain.Entities.Organization", b =>
+                {
+                    b.Navigation("Projects");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Zezame.Domain.Entities.Project", b =>

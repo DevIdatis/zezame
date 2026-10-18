@@ -66,10 +66,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 builder.Services.AddAuthorization(options => {
-    options.AddPolicy("RequireCoordinator", policy =>
-        policy.RequireRole("Coordinator", "Admin"));
+    // Managers, Admins y Owners pueden gestionar proyectos/actividades/equipo.
+    options.AddPolicy("RequireManager", policy =>
+        policy.RequireRole("Manager", "Admin", "Owner"));
+    // Admins y Owners: administración de la organización.
     options.AddPolicy("RequireAdmin", policy =>
-        policy.RequireRole("Admin"));
+        policy.RequireRole("Admin", "Owner"));
 });
 
 // Rate limiting: limita los intentos en endpoints de autenticación por IP

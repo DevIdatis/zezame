@@ -15,7 +15,7 @@ namespace Zezame.Api.Controllers {
         }
 
         [HttpPost]
-        [Authorize(Policy = "RequireCoordinator")]
+        [Authorize(Policy = "RequireManager")]
         public async Task<ActionResult<ActivityDto>> Create(CreateActivityDto dto) {
             var userId = GetCurrentUserId();
             var activity = await _activityService.CreateAsync(userId, dto);

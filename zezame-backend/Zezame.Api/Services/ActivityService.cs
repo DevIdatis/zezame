@@ -1,4 +1,5 @@
-﻿using Zezame.Api.Models.DTOs;
+﻿using Zezame.Api.Exceptions;
+using Zezame.Api.Models.DTOs;
 using Zezame.Api.Services.Interfaces;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
@@ -22,11 +23,15 @@ namespace Zezame.Api.Services {
             // Verificar acceso al proyecto
             await _auth.EnsureCanManageProjectAsync(coordinatorId, dto.ProjectId);
 
+            var project = await _projects.GetByIdAsync(dto.ProjectId)
+                ?? throw new NotFoundException("Proyecto no encontrado");
+
             var activity = new Activity {
                 Name = dto.Name,
                 Description = dto.Description,
                 Emoji = dto.Emoji,
                 ProjectId = dto.ProjectId,
+                OrganizationId = project.OrganizationId,
                 AssignedToId = dto.AssignedToId,
                 CreatedById = coordinatorId,
                 EstimatedMinutes = dto.EstimatedMinutes

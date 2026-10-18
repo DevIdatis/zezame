@@ -2,11 +2,13 @@
 
 namespace Zezame.Api.Models {
     public class AuthDtos {
+        // El registro público crea una organización nueva y convierte al registrante
+        // en Owner. Los demás usuarios entran por invitación (fase posterior).
         public record RegisterDto(
             string Email,
             string Password,
             string FullName,
-            UserRole? Role = null // Solo Admin puede asignar otros roles
+            string OrganizationName
         );
 
         public record TokenDto(string Token, DateTime Expires, UserDto User);

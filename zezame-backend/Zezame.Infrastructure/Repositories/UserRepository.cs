@@ -2,7 +2,6 @@
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
 using Zezame.Infrastructure.Persistence;
-using static Zezame.Domain.Entities.User;
 
 namespace Zezame.Infrastructure.Repositories {
     public class UserRepository(ZezameDbContext db) : Repository<User>(db), IUserRepository {
@@ -18,7 +17,7 @@ namespace Zezame.Infrastructure.Repositories {
                 .ThenInclude(pm => pm.Project)
                 .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
 
-        public async Task<IEnumerable<User>> GetByRoleAsync(UserRole role)
+        public async Task<IEnumerable<User>> GetByRoleAsync(OrganizationRole role)
             => await _dbSet.Where(u => u.Role == role && !u.IsDeleted).ToListAsync();
     }
 }

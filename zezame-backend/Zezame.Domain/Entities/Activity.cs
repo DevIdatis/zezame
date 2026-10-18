@@ -9,6 +9,9 @@ namespace Zezame.Domain.Entities {
         public ActivityStatus Status { get; set; } = ActivityStatus.Todo;
         public int? EstimatedMinutes { get; set; } // Estimación opcional
 
+        // Organización (tenant), denormalizada desde el proyecto para filtrar y agregar directamente.
+        public Guid OrganizationId { get; set; }
+
         // Relaciones
         public Guid ProjectId { get; set; }
         public Project Project { get; set; } = null!;

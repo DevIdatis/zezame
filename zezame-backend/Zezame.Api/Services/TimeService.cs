@@ -12,13 +12,23 @@ namespace Zezame.Api.Services {
         private readonly IHubContext<TimeHub> _hub;
         private readonly IAuthorizationService _auth;
         private readonly IActivityRepository _activities;
+        private readonly IUserRepository _users;
 
         public TimeService(
             ITimeEntryRepository repo,
             IHubContext<TimeHub> hub,
             IAuthorizationService auth,
-            IActivityRepository activities)
-            => (_repo, _hub, _auth, _activities) = (repo, hub, auth, activities);
+            IActivityRepository activities,
+            IUserRepository users)
+            => (_repo, _hub, _auth, _activities, _users) = (repo, hub, auth, activities, users);
+
+        // La organización (tenant) de cada entrada se deriva del usuario que ficha.
+        private async Task<Guid> ResolveOrganizationIdAsync(Guid userId) {
+            var user = await _users.GetByIdAsync(userId)
+                ?? throw new UnauthorizedAccessException("Usuario no encontrado");
+            return user.OrganizationId
+                ?? throw new InvalidOperationException("El usuario no pertenece a ninguna organización");
+        }
 
         public async Task<EntryVm> StartAsync(Guid userId, StartEntryDto dto) {
             if (await _repo.GetRunningAsync(userId) != null)
@@ -40,6 +50,7 @@ namespace Zezame.Api.Services {
             var now = DateTime.UtcNow;
             var entry = new TimeEntry {
                 UserId = userId,
+                OrganizationId = await ResolveOrganizationIdAsync(userId),
                 StartTime = now,
                 Description = dto.Description,
                 Type = dto.Type,
@@ -84,6 +95,7 @@ namespace Zezame.Api.Services {
             // 2. Iniciar automáticamente entrada de pausa
             var breakEntry = new TimeEntry {
                 UserId = userId,
+                OrganizationId = workEntry.OrganizationId,
                 StartTime = DateTime.UtcNow,
                 Type = EntryType.Break,
                 Description = "Pausa automática",
@@ -107,6 +119,7 @@ namespace Zezame.Api.Services {
             // 2. Iniciar automáticamente trabajo
             var workEntry = new TimeEntry {
                 UserId = userId,
+                OrganizationId = breakEntry.OrganizationId,
                 StartTime = DateTime.UtcNow,
                 Type = EntryType.Work,
                 Description = "Trabajo reanudado",

@@ -17,6 +17,7 @@ namespace Zezame.Api.Validation {
         public RegisterDtoValidator() {
             RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(120);
             RuleFor(x => x.FullName).NotEmpty().MaximumLength(120);
+            RuleFor(x => x.OrganizationName).NotEmpty().MaximumLength(150);
             RuleFor(x => x.Password).Password();
         }
     }

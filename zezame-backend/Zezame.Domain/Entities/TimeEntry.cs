@@ -3,6 +3,8 @@
 namespace Zezame.Domain.Entities {
     public enum EntryType { Work, Break }
     public class TimeEntry : BaseEntity {
+        // Organización (tenant), denormalizada desde el usuario para filtrar y agregar directamente.
+        public Guid OrganizationId { get; set; }
         public Guid UserId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }

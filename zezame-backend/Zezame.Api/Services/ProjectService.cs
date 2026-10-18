@@ -14,8 +14,13 @@ namespace Zezame.Api.Services {
         private readonly Interfaces.IAuthorizationService _auth = auth;
 
         public async Task<ProjectDto> CreateAsync(Guid coordinatorId, CreateProjectDto dto) {
-            // Verificar que es Coordinator o Admin
+            // Verificar que puede crear proyectos (Manager/Admin/Owner).
             await _auth.EnsureCanCreateProjectsAsync(coordinatorId);
+
+            var owner = await _users.GetByIdAsync(coordinatorId)
+                ?? throw new NotFoundException("Usuario no encontrado");
+            if (owner.OrganizationId is null)
+                throw new InvalidOperationException("El usuario no pertenece a ninguna organización");
 
             var project = new Project {
                 Name = dto.Name,
@@ -24,13 +29,13 @@ namespace Zezame.Api.Services {
                 Emoji = dto.Emoji,
                 Deadline = dto.Deadline,
                 Status = ProjectStatus.Active,
-                OwnerId = coordinatorId
+                OwnerId = coordinatorId,
+                OrganizationId = owner.OrganizationId.Value
             };
 
             await _projects.AddAsync(project);
 
-            var owner = await _users.GetByIdAsync(coordinatorId);
-            return MapToDto(project, owner?.FullName ?? "Unknown");
+            return MapToDto(project, owner.FullName);
         }
 
         public async Task<IEnumerable<ProjectDto>> GetProjectsAsync(Guid userId, ProjectStatus? status = null) {

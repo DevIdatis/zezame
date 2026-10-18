@@ -36,7 +36,7 @@ namespace Zezame.Api.Controllers {
         }
 
         [HttpPost]
-        [Authorize(Policy = "RequireCoordinator")]
+        [Authorize(Policy = "RequireManager")]
         public async Task<ActionResult<ProjectDto>> Create(CreateProjectDto dto) {
             var userId = GetCurrentUserId();
             var project = await _projectService.CreateAsync(userId, dto);
@@ -44,7 +44,7 @@ namespace Zezame.Api.Controllers {
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = "RequireCoordinator")]
+        [Authorize(Policy = "RequireManager")]
         public async Task<ActionResult<ProjectDto>> Update(Guid id, UpdateProjectDto dto) {
             var userId = GetCurrentUserId();
             var project = await _projectService.UpdateAsync(id, userId, dto);
@@ -52,7 +52,7 @@ namespace Zezame.Api.Controllers {
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = "RequireCoordinator")]
+        [Authorize(Policy = "RequireManager")]
         public async Task<IActionResult> Delete(Guid id) {
             var userId = GetCurrentUserId();
             await _projectService.DeleteAsync(id, userId);
@@ -60,7 +60,7 @@ namespace Zezame.Api.Controllers {
         }
 
         [HttpPost("{projectId}/members/{userId}")]
-        [Authorize(Policy = "RequireCoordinator")]
+        [Authorize(Policy = "RequireManager")]
         public async Task<IActionResult> AddMember(Guid projectId, Guid userId) {
             var currentUserId = GetCurrentUserId();
             await _projectService.AddMemberAsync(projectId, currentUserId, userId);
