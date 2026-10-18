@@ -36,8 +36,8 @@
 
       <!-- CTA Buttons -->
       <div class="hidden md:flex items-center gap-4">
-        <button class="btn-secondary" (click)="showLogin = true">Iniciar sesión</button>
-        <button class="btn-primary" (click)="showLogin = true">Empezar gratis</button>
+        <button class="btn-secondary" (click)="openLogin()">Iniciar sesión</button>
+        <button class="btn-primary" (click)="openSignUp()">Empezar gratis</button>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -69,8 +69,8 @@
             Precios
           </a>
           <div class="flex flex-col gap-3 pt-4">
-            <button class="btn-secondary w-full" (click)="showLogin = true">Iniciar sesión</button>
-            <button class="btn-primary w-full" (click)="showLogin = true">Empezar gratis</button>
+            <button class="btn-secondary w-full" (click)="openLogin()">Iniciar sesión</button>
+            <button class="btn-primary w-full" (click)="openSignUp()">Empezar gratis</button>
           </div>
         </div>
       </div>
@@ -78,5 +78,5 @@
   </div>
 </nav>
 
-<app-login-register [isOpen]="showLogin" (close)="showLogin = false" (login)="handleLogin()">
+<app-login-register [isOpen]="showLogin" [isSignUp]="signUp" (close)="showLogin = false" (login)="handleLogin()">
 </app-login-register>

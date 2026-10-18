@@ -1,0 +1,26 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-background">
+  <div class="w-full max-w-md text-center p-8 rounded-3xl border border-border/50 shadow-xl bg-gradient-to-br from-background via-background to-coral/5">
+    @switch (state()) {
+      @case ('loading') {
+        <h1 class="text-2xl font-display mb-2">Verificando tu email…</h1>
+        <p class="text-muted-foreground">Un momento, por favor.</p>
+      }
+      @case ('success') {
+        <div class="text-5xl mb-4">✅</div>
+        <h1 class="text-2xl font-display mb-2">¡Email verificado!</h1>
+        <p class="text-muted-foreground mb-6">Tu cuenta ya está confirmada.</p>
+        <a routerLink="/main" class="inline-block h-12 px-6 leading-[3rem] rounded-xl bg-gradient-to-r from-coral to-yellow text-white font-semibold">
+          Ir a iniciar sesión
+        </a>
+      }
+      @case ('error') {
+        <div class="text-5xl mb-4">⚠️</div>
+        <h1 class="text-2xl font-display mb-2">No pudimos verificar el email</h1>
+        <p class="text-muted-foreground mb-6">El enlace no es válido o ha caducado. Puedes pedir uno nuevo desde la aplicación.</p>
+        <a routerLink="/main" class="inline-block h-12 px-6 leading-[3rem] rounded-xl border-2 border-border font-semibold">
+          Volver al inicio
+        </a>
+      }
+    }
+  </div>
+</div>

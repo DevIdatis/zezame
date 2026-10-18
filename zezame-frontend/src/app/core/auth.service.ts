@@ -151,6 +151,18 @@ export class AuthService {
     return this.isBrowser ? localStorage.getItem('refreshToken') : null;
   }
 
+  verifyEmail(token: string): Observable<unknown> {
+    return this.http.post(`${this.api}/auth/verify-email`, { token });
+  }
+
+  forgotPassword(email: string): Observable<unknown> {
+    return this.http.post(`${this.api}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<unknown> {
+    return this.http.post(`${this.api}/auth/reset-password`, { token, newPassword });
+  }
+
   // Actualiza en memoria el usuario actual (p. ej. tras editar el perfil)
   patchUser(patch: Partial<User>): void {
     const current = this.user$.value;

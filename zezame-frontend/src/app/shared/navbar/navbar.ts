@@ -14,6 +14,7 @@ export class Navbar {
   Clock = Clock;
   Menu = Menu;
   isOpen = false;
+  signUp = false;
   showLogin = false;
 
   constructor() {}
@@ -22,4 +23,15 @@ export class Navbar {
     this.showLogin = false;
     this.router.navigate(['/dashboard']);
   }
+
+  openLogin(): void {
+    this.showLogin = true;
+    this.signUp = false;
+  }
+
+  openSignUp(): void {
+    this.showLogin = true;
+    this.signUp = true;
+  }
+  
 }

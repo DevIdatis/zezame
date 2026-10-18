@@ -9,6 +9,15 @@ export const routes: Routes = [
   { path: 'main', component: Main },
 
   {
+    path: 'verify-email',
+    loadComponent: () => import('./auth/verify-email/verify-email').then((m) => m.VerifyEmail),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./auth/reset-password/reset-password').then((m) => m.ResetPassword),
+  },
+
+  {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () => import('./dashboard/dashboard').then((m) => m.Dashboard),

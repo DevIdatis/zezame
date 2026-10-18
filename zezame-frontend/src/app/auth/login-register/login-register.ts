@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule, Eye, EyeOff, Lock, Mail, Sparkles, X } from 'lucide-angular';
 import { Router } from '@angular/router';
@@ -13,7 +13,7 @@ import { ErrorModalService } from '../../core/error-modal.service';
   templateUrl: './login-register.html',
   styleUrl: './login-register.scss',
 })
-export class LoginRegister {
+export class LoginRegister implements OnChanges{
   private fb = inject(FormBuilder);
   protected auth = inject(AuthService);
   private router = inject(Router);
@@ -27,6 +27,7 @@ export class LoginRegister {
   X = X;
 
   @Input() isOpen = false;
+  @Input() isSignUp = false;
   @Output() close = new EventEmitter<void>();
   @Output() login = new EventEmitter<void>();
 
@@ -39,8 +40,25 @@ export class LoginRegister {
     password: ['', Validators.required],
   });
 
-  isSignUp = false;
   showPassword = false;
+  resetMsg = '';
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isSignUp']) {
+      this.updateValidators();
+    }
+  }
+
+  requestPasswordReset() {
+    const email = this.form.get('email')?.value;
+    if (!email || this.form.get('email')?.invalid) {
+      this.resetMsg = 'Escribe un email válido arriba y vuelve a pulsar.';
+      return;
+    }
+    // Respuesta neutra: el backend no revela si el email existe.
+    this.auth.forgotPassword(email).subscribe({ next: () => {}, error: () => {} });
+    this.resetMsg = 'Si ese email tiene cuenta, te hemos enviado instrucciones para restablecer la contraseña.';
+  }
 
   submit() {
     if (this.form.invalid) return;
@@ -65,7 +83,7 @@ export class LoginRegister {
     }
   }
 
-  closeModal() {
+  closeModal(): void {
     this.form.reset({
       fullname: '',
       organizationName: '',
@@ -76,43 +94,31 @@ export class LoginRegister {
     this.form.markAsPristine();
     this.form.markAsUntouched();
 
-    this.isSignUp = false;
     this.showPassword = false;
+    this.resetMsg = '';
+
     this.close.emit();
   }
 
   toggleMode() {
     this.isSignUp = !this.isSignUp;
-    // En registro, nombre completo y nombre de organización son obligatorios.
-    const requiredInSignUp = ['fullname', 'organizationName'];
-    for (const name of requiredInSignUp) {
-      const ctrl = this.form.get(name);
+    this.updateValidators();
+  }
+
+  private updateValidators(): void {
+    const requiredFields = ['fullname', 'organizationName'];
+
+    for (const name of requiredFields) {
+      const control = this.form.get(name);
+
       if (this.isSignUp) {
-        ctrl?.setValidators([Validators.required]);
+        control?.setValidators([Validators.required]);
       } else {
-        ctrl?.clearValidators();
-        ctrl?.reset();
+        control?.clearValidators();
+        control?.reset();
       }
-      ctrl?.updateValueAndValidity();
+
+      control?.updateValueAndValidity();
     }
   }
-  // private fb = inject(FormBuilder);
-  // private auth = inject(AuthService);
-  // private router = inject(Router);
-
-  // form = this.fb.group({
-  //   email: ['', [Validators.required, Validators.email]],
-  //   password: ['', Validators.required],
-  // });
-
-  // error = '';
-
-  // submit(): void {
-  //   if (this.form.invalid) return;
-
-  //   this.auth.login(this.form.value as LoginRequest).subscribe({
-  //     next: () => this.router.navigate(['/dashboard']),
-  //     error: (e) => (this.error = e.error || 'Credenciales inválidas'),
-  //   });
-  // }
 }
