@@ -16,6 +16,7 @@ namespace Zezame.Infrastructure.Persistence {
         public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<UserToken> UserTokens => Set<UserToken>();
+        public DbSet<Invitation> Invitations => Set<Invitation>();
 
         public ZezameDbContext(DbContextOptions<ZezameDbContext> options, ITenantContext tenant)
             : base(options) {
@@ -55,6 +56,9 @@ namespace Zezame.Infrastructure.Persistence {
             modelBuilder.Entity<RefreshToken>().HasQueryFilter(e => !e.IsDeleted);
             // Los tokens de verificación/reset se usan sin autenticar: sin filtro de tenant.
             modelBuilder.Entity<UserToken>().HasQueryFilter(e => !e.IsDeleted);
+            // La aceptación de invitación ocurre sin autenticar (lookup por token): sin
+            // filtro de tenant. El aislamiento por organización se aplica en el servicio.
+            modelBuilder.Entity<Invitation>().HasQueryFilter(e => !e.IsDeleted);
 
             // Aislamiento multi-tenant (fail-closed): sin organización resuelta,
             // CurrentOrganizationId es null y estas consultas no devuelven nada.
@@ -201,6 +205,22 @@ namespace Zezame.Infrastructure.Persistence {
 
             modelBuilder.Entity<UserToken>()
                 .HasIndex(t => new { t.Purpose, t.TokenHash });
+
+            // Invitaciones
+            modelBuilder.Entity<Invitation>()
+                .HasOne(i => i.Organization)
+                .WithMany()
+                .HasForeignKey(i => i.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Invitation>()
+                .Property(i => i.Email).HasMaxLength(120).IsRequired();
+            modelBuilder.Entity<Invitation>()
+                .Property(i => i.TokenHash).HasMaxLength(128).IsRequired();
+            modelBuilder.Entity<Invitation>()
+                .HasIndex(i => i.TokenHash).IsUnique();
+            modelBuilder.Entity<Invitation>()
+                .HasIndex(i => i.OrganizationId);
         }
 
         public override int SaveChanges() {

@@ -5,6 +5,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Zezame.Api.Email;
 using Zezame.Api.Models.DTOs;
+using Zezame.Api.Security;
+using Zezame.Api.Services.Interfaces;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
 using static Zezame.Api.Models.AuthDtos;
@@ -16,7 +18,7 @@ namespace Zezame.Api.Services {
         IRefreshTokenRepository refreshTokens,
         IUserTokenRepository userTokens,
         IEmailSender email,
-        IConfiguration cfg) {
+        IConfiguration cfg) : ITokenIssuer {
 
         private readonly IUserRepository _users = users;
         private readonly IRepository<Organization> _orgs = orgs;
@@ -57,6 +59,7 @@ namespace Zezame.Api.Services {
 
             await _users.AddAsync(user);
 
+            // Enviar email de verificación (verificación soft: no bloquea el login).
             await SendVerificationEmailAsync(user);
 
             return await IssueTokensAsync(user);
@@ -202,7 +205,7 @@ namespace Zezame.Api.Services {
             }
         }
 
-        private async Task<TokenDto> IssueTokensAsync(User user) {
+        public async Task<TokenDto> IssueTokensAsync(User user) {
             var (accessToken, expires) = CreateAccessToken(user);
 
             var rawRefresh = GenerateRefreshTokenRaw();
@@ -242,15 +245,8 @@ namespace Zezame.Api.Services {
             return (new JwtSecurityTokenHandler().WriteToken(token), expires);
         }
 
-        private static string GenerateRefreshTokenRaw()
-            => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-
-        // Token aleatorio apto para URL (sin +, / ni =) para verificación/reset.
-        private static string GenerateUrlToken()
-            => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
-                .Replace('+', '-').Replace('/', '_').TrimEnd('=');
-
-        private static string HashToken(string raw)
-            => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw)));
+        private static string GenerateRefreshTokenRaw() => TokenUtils.GenerateUrlToken();
+        private static string GenerateUrlToken() => TokenUtils.GenerateUrlToken();
+        private static string HashToken(string raw) => TokenUtils.Hash(raw);
     }
 }

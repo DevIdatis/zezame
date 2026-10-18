@@ -81,6 +81,10 @@ namespace Zezame.Api.Services {
             var user = await _users.GetByIdAsync(userId)
                 ?? throw new NotFoundException("Usuario no encontrado");
 
+            // El usuario debe pertenecer a la misma organización que el proyecto.
+            if (user.OrganizationId != project.OrganizationId)
+                throw new ForbiddenException("El usuario no pertenece a esta organización");
+
             if (await _projects.IsMemberAsync(projectId, userId))
                 throw new InvalidOperationException("Usuario ya es miembro");
 

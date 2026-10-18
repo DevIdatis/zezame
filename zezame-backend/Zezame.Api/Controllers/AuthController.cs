@@ -11,9 +11,11 @@ namespace Zezame.Api.Controllers {
     [EnableRateLimiting("auth")]
     public class AuthController : ControllerBase {
         private readonly AuthService _auth;
+        private readonly InvitationService _invitations;
 
-        public AuthController(AuthService auth) {
+        public AuthController(AuthService auth, InvitationService invitations) {
             _auth = auth;
+            _invitations = invitations;
         }
 
         [HttpPost("register")]
@@ -57,6 +59,11 @@ namespace Zezame.Api.Controllers {
             await _auth.ResetPasswordAsync(dto.Token, dto.NewPassword);
             return NoContent();
         }
+
+        // Anónimo: la persona invitada crea su cuenta en la organización y queda logueada.
+        [HttpPost("accept-invitation")]
+        public async Task<ActionResult<TokenDto>> AcceptInvitation(AcceptInvitationDto dto)
+            => Ok(await _invitations.AcceptAsync(dto));
 
         [Authorize]
         [HttpPost("change-password")]

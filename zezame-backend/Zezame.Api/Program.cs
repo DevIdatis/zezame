@@ -100,6 +100,7 @@ builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 
 // Contexto de tenant (organización de la petición), consumido por el query filter de EF.
 builder.Services.AddScoped<ITenantContext, TenantContext>();
@@ -111,6 +112,8 @@ builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
 // Servicios
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ITokenIssuer>(sp => sp.GetRequiredService<AuthService>());
+builder.Services.AddScoped<InvitationService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<TimeService>();
