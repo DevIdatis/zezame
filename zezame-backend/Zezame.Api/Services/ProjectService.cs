@@ -38,7 +38,8 @@ namespace Zezame.Api.Services {
             return projects.Select(p => MapToDto(p, p.Owner?.FullName ?? "Unknown"));
         }
 
-        public async Task<ProjectDto?> GetByIdAsync(Guid id) {
+        public async Task<ProjectDto?> GetByIdAsync(Guid id, Guid userId) {
+            await _auth.EnsureCanAccessProjectAsync(userId, id);
             var project = await _projects.GetByIdWithMembersAsync(id);
             return project == null ? null : MapToDto(project, project.Owner?.FullName ?? "Unknown");
         }

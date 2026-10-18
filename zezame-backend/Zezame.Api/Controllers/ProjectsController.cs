@@ -31,7 +31,7 @@ namespace Zezame.Api.Controllers {
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ProjectDto>> GetById(Guid id) {
-            var project = await _projectService.GetByIdAsync(id);
+            var project = await _projectService.GetByIdAsync(id, GetCurrentUserId());
             return project == null ? NotFound() : Ok(project);
         }
 

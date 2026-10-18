@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Zezame.Api.Exceptions;
 using Zezame.Api.Hubs;
+using Zezame.Api.Services.Interfaces;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
 using static Zezame.Api.Models.TimeEntryDtos;
@@ -8,13 +10,32 @@ namespace Zezame.Api.Services {
     public class TimeService {
         private readonly ITimeEntryRepository _repo;
         private readonly IHubContext<TimeHub> _hub;
+        private readonly IAuthorizationService _auth;
+        private readonly IActivityRepository _activities;
 
-        public TimeService(ITimeEntryRepository repo, IHubContext<TimeHub> hub)
-            => (_repo, _hub) = (repo, hub);
+        public TimeService(
+            ITimeEntryRepository repo,
+            IHubContext<TimeHub> hub,
+            IAuthorizationService auth,
+            IActivityRepository activities)
+            => (_repo, _hub, _auth, _activities) = (repo, hub, auth, activities);
 
         public async Task<EntryVm> StartAsync(Guid userId, StartEntryDto dto) {
             if (await _repo.GetRunningAsync(userId) != null)
                 throw new InvalidOperationException("Ya hay una entrada activa");
+
+            // Solo se puede imputar tiempo a proyectos/actividades accesibles por el
+            // usuario; impide asociar la entrada a recursos ajenos (IDOR).
+            if (dto.ProjectId.HasValue)
+                await _auth.EnsureCanAccessProjectAsync(userId, dto.ProjectId.Value);
+
+            if (dto.ActivityId.HasValue) {
+                var activity = await _activities.GetByIdAsync(dto.ActivityId.Value)
+                    ?? throw new NotFoundException("Actividad no encontrada");
+                await _auth.EnsureCanAccessProjectAsync(userId, activity.ProjectId);
+                if (dto.ProjectId.HasValue && dto.ProjectId.Value != activity.ProjectId)
+                    throw new InvalidOperationException("La actividad no pertenece al proyecto indicado.");
+            }
 
             var now = DateTime.UtcNow;
             var entry = new TimeEntry {

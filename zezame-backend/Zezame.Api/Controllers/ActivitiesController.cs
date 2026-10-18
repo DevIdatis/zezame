@@ -9,11 +9,9 @@ namespace Zezame.Api.Controllers {
     [Authorize]
     public class ActivitiesController : ControllerBase {
         private readonly ActivityService _activityService;
-        private readonly IHttpContextAccessor _httpContext;
 
-        public ActivitiesController(ActivityService activityService, IHttpContextAccessor httpContext) {
+        public ActivitiesController(ActivityService activityService) {
             _activityService = activityService;
-            _httpContext = httpContext;
         }
 
         [HttpPost]
@@ -33,7 +31,7 @@ namespace Zezame.Api.Controllers {
 
         [HttpGet("by-project/{projectId}")]
         public async Task<ActionResult<IEnumerable<ActivityDto>>> GetByProject(Guid projectId) {
-            var activities = await _activityService.GetByProjectAsync(projectId);
+            var activities = await _activityService.GetByProjectAsync(projectId, GetCurrentUserId());
             return Ok(activities);
         }
 

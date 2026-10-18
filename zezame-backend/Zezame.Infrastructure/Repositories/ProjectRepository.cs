@@ -53,5 +53,26 @@ namespace Zezame.Infrastructure.Repositories {
             await _context.ProjectMembers.AddAsync(member);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<Guid>> GetTeammateUserIdsAsync(Guid userId) {
+            // Proyectos del usuario (propios o como miembro). El filtro global de
+            // soft-delete excluye automáticamente proyectos/miembros borrados.
+            var projectIds = await _dbSet
+                .Where(p => p.OwnerId == userId || p.Members.Any(m => m.UserId == userId))
+                .Select(p => p.Id)
+                .ToListAsync();
+
+            var ownerIds = await _dbSet
+                .Where(p => projectIds.Contains(p.Id))
+                .Select(p => p.OwnerId)
+                .ToListAsync();
+
+            var memberIds = await _context.ProjectMembers
+                .Where(pm => projectIds.Contains(pm.ProjectId))
+                .Select(pm => pm.UserId)
+                .ToListAsync();
+
+            return ownerIds.Concat(memberIds).Append(userId).Distinct();
+        }
     }
 }

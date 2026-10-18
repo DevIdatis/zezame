@@ -21,6 +21,23 @@ namespace Zezame.Api.Services {
                 throw new ForbiddenException("Solo coordinadores y admins pueden crear proyectos");
         }
 
+        public async Task EnsureCanAccessProjectAsync(Guid userId, Guid projectId) {
+            var user = await _users.GetByIdAsync(userId);
+            if (user == null) throw new UnauthorizedException();
+
+            // Admin puede leer cualquier proyecto.
+            if (user.Role == UserRole.Admin) return;
+
+            var project = await _projects.GetByIdAsync(projectId);
+            // Si no existe, o el usuario no es propietario ni miembro, respondemos 404:
+            // no confirmamos la existencia de proyectos ajenos (evita IDOR/enumeración).
+            if (project == null) throw new NotFoundException("Proyecto no encontrado");
+            if (project.OwnerId == userId) return;
+            if (await _projects.IsMemberAsync(projectId, userId)) return;
+
+            throw new NotFoundException("Proyecto no encontrado");
+        }
+
         public async Task EnsureCanManageProjectAsync(Guid userId, Guid projectId) {
             var user = await _users.GetByIdAsync(userId);
             if (user == null) throw new UnauthorizedException();

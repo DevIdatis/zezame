@@ -41,7 +41,9 @@ namespace Zezame.Api.Services {
             return activities.Select(MapToDto);
         }
 
-        public async Task<IEnumerable<ActivityDto>> GetByProjectAsync(Guid projectId) {
+        public async Task<IEnumerable<ActivityDto>> GetByProjectAsync(Guid projectId, Guid userId) {
+            // Comprobación de pertenencia: impide listar actividades de proyectos ajenos (IDOR).
+            await _auth.EnsureCanAccessProjectAsync(userId, projectId);
             var activities = await _activities.GetByProjectAsync(projectId);
             return activities.Select(MapToDto);
         }

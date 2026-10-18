@@ -1,12 +1,16 @@
 using Zezame.Api.Models.DTOs;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
+using static Zezame.Domain.Entities.User;
 
 namespace Zezame.Api.Services {
     public class ReportService {
         private readonly ITimeEntryRepository _entries;
+        private readonly IUserRepository _users;
+        private readonly IProjectRepository _projects;
 
-        public ReportService(ITimeEntryRepository entries) => _entries = entries;
+        public ReportService(ITimeEntryRepository entries, IUserRepository users, IProjectRepository projects)
+            => (_entries, _users, _projects) = (entries, users, projects);
 
         // Agregación por día de un mes (para el heatmap del calendario)
         public async Task<IEnumerable<CalendarDayDto>> GetCalendarAsync(Guid userId, int year, int month) {
@@ -117,9 +121,16 @@ namespace Zezame.Api.Services {
         }
 
         // ===== Ranking del equipo (todos los usuarios) =====
-        public async Task<IEnumerable<TeamMemberDto>> GetTeamAsync(int year, int month) {
+        // Acotado a los usuarios con los que el solicitante comparte proyecto
+        public async Task<IEnumerable<TeamMemberDto>> GetTeamAsync(Guid userId, int year, int month) {
             var start = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
             var entries = await _entries.GetAllInRangeAsync(start, start.AddMonths(1).AddSeconds(-1));
+
+            var user = await _users.GetByIdAsync(userId);
+            if (user?.Role != UserRole.Admin) {
+                var team = (await _projects.GetTeammateUserIdsAsync(userId)).ToHashSet();
+                entries = entries.Where(e => team.Contains(e.UserId)).ToList();
+            }
 
             return entries
                 .Where(e => e.User != null)

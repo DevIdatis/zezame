@@ -10,5 +10,9 @@ namespace Zezame.Domain.Interfaces {
         // Proyectos del usuario (propios o como miembro) con navegaciones para calcular stats
         Task<IEnumerable<Project>> GetAllWithStatsAsync(Guid userId, ProjectStatus? status = null);
         Task AddMemberAsync(ProjectMember member);
+
+        // IDs de usuarios con los que el usuario comparte proyecto (propietarios y
+        // miembros de sus proyectos, incluido él mismo). Para acotar el ranking de equipo.
+        Task<IEnumerable<Guid>> GetTeammateUserIdsAsync(Guid userId);
     }
 }
