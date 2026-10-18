@@ -11,7 +11,7 @@ import {
   Target,
   Sparkles,
 } from 'lucide-angular';
-import { ReportService } from '../../../core/report.service';
+import { ReportService } from '../../../core/services/report.service';
 import { CalendarDay, DaySummary } from '../../../core/models';
 import { EntryFormDialog } from './components/entry-form-dialog/entry-form-dialog';
 

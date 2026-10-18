@@ -8,7 +8,7 @@ namespace Zezame.Infrastructure.Repositories {
         : Repository<RefreshToken>(context), IRefreshTokenRepository {
 
         public Task<RefreshToken?> GetByTokenHashAsync(string tokenHash)
-            => _dbSet.Include(rt => rt.User)
+            => _dbSet.Include(rt => rt.User).ThenInclude(x => x.Organization)
                      .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash);
 
         public Task RevokeAllActiveForUserAsync(Guid userId, DateTime when)

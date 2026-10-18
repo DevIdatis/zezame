@@ -1,4 +1,4 @@
-import { Component, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {
   LucideAngularModule,
@@ -22,10 +22,11 @@ import {
   Download,
   LucideIconData,
 } from 'lucide-angular';
-import { UserService } from '../../../core/user.service';
-import { AuthService } from '../../../core/auth.service';
-import { ThemeService, Theme } from '../../../core/theme.service';
-import { ErrorModalService } from '../../../core/error-modal.service';
+import { UserService } from 'services/user.service';
+import { AuthService } from 'services/auth.service';
+import { ThemeService, Theme } from 'services/theme.service';
+import { ErrorModalService } from 'services/error-modal.service';
+import { AuthorizationService } from 'services/authorization.service';
 
 type TabId = 'profile' | 'notifications' | 'appearance' | 'security' | 'billing';
 
@@ -33,6 +34,7 @@ interface Tab {
   id: TabId;
   label: string;
   icon: LucideIconData;
+  canSee?: boolean;
 }
 
 interface NotificationPrefs {
@@ -49,6 +51,7 @@ interface NotificationPrefs {
   styleUrl: './settings.scss',
 })
 export class Settings implements OnInit {
+  private authorization = inject(AuthorizationService);
   private userService = inject(UserService);
   private auth = inject(AuthService);
   private themeService = inject(ThemeService);
@@ -78,13 +81,15 @@ export class Settings implements OnInit {
   };
 
   activeTab = signal<TabId>('profile');
-
+  readonly isOwner = computed(() =>
+    this.authorization.isOwner()
+  );
   readonly tabs: Tab[] = [
-    { id: 'profile', label: 'Perfil', icon: User },
-    { id: 'notifications', label: 'Notificaciones', icon: Bell },
-    { id: 'appearance', label: 'Apariencia', icon: Palette },
-    { id: 'security', label: 'Seguridad', icon: Shield },
-    { id: 'billing', label: 'Facturación', icon: CreditCard },
+    { id: 'profile', label: 'Perfil', icon: User, canSee: true },
+    { id: 'notifications', label: 'Notificaciones', icon: Bell, canSee: true },
+    { id: 'appearance', label: 'Apariencia', icon: Palette, canSee: true },
+    { id: 'security', label: 'Seguridad', icon: Shield, canSee: true },
+    { id: 'billing', label: 'Facturación', icon: CreditCard, canSee: this.isOwner() },
   ];
 
   // ===== Perfil =====

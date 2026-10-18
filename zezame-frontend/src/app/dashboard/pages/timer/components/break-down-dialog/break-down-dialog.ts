@@ -11,7 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { LucideAngularModule, X } from 'lucide-angular';
-import { ReportService } from '../../../../../core/report.service';
+import { ReportService } from '../../../../../core/services/report.service';
 import { DayEntry, DaySummary, ProjectBreakdown, WeeklyPoint } from '../../../../../core/models';
 
 export type BreakdownPeriod = 'day' | 'week' | 'month';

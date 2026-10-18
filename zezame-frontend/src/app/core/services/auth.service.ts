@@ -2,9 +2,10 @@ import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
-import { LoginRequest, RegisterRequest, TokenResponse, User } from './models';
+import { environment } from '../../../environments/environment';
+import { LoginRequest, RegisterRequest, TokenResponse, User } from '../models';
 import { isPlatformBrowser } from '@angular/common';
+import { OrganizationRole } from '../enum/organization-role.enum';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -113,6 +114,9 @@ export class AuthService {
         id: payload.sub || payload.nameidentifier,
         email: payload.email,
         fullName: payload.name,
+        organizationId: payload.org_id,
+        organizationName: payload.org_name,
+        role: Number(payload.role) as OrganizationRole
       });
     } catch {
       this.user$.next(null);

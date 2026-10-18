@@ -8,6 +8,7 @@ namespace Zezame.Infrastructure.Repositories {
         public async Task<User?> GetByEmailAsync(string email)
         => await _dbSet
             .AsNoTracking()
+            .Include(x => x.Organization)
             .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower() && !u.IsDeleted);
 
         public async Task<User?> GetByIdWithProjectsAsync(Guid id)

@@ -2,10 +2,10 @@ import { Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChange
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule, Eye, EyeOff, Lock, Mail, Sparkles, X } from 'lucide-angular';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { LoginRequest, RegisterRequest } from '../../core/models';
 import { AsyncPipe } from '@angular/common';
-import { ErrorModalService } from '../../core/error-modal.service';
+import { ErrorModalService } from '../../core/services/error-modal.service';
 
 @Component({
   selector: 'app-login-register',

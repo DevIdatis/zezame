@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ErrorModal } from './shared/error-modal/error-modal';
-import { ThemeService } from './core/theme.service';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',

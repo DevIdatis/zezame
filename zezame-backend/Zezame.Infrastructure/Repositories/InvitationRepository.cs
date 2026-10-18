@@ -8,7 +8,7 @@ namespace Zezame.Infrastructure.Repositories {
         : Repository<Invitation>(context), IInvitationRepository {
 
         public Task<Invitation?> GetByTokenHashAsync(string tokenHash)
-            => _dbSet.FirstOrDefaultAsync(i => i.TokenHash == tokenHash);
+            => _dbSet.Include(x => x.Organization).FirstOrDefaultAsync(i => i.TokenHash == tokenHash);
 
         public async Task<IEnumerable<Invitation>> GetByOrganizationAsync(Guid organizationId)
             => await _dbSet

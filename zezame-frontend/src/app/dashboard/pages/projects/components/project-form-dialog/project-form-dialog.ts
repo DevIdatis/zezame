@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { LucideAngularModule, X, FolderPlus } from 'lucide-angular';
-import { ProjectService } from '../../../../../core/project.service';
+import { ProjectService } from 'services/project.service';
 import { Project } from '../../../../../core/models';
 
 @Component({

@@ -1,3 +1,5 @@
+import { OrganizationRole } from "./enum/organization-role.enum";
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -17,6 +19,9 @@ export interface User {
   id: string;
   email: string;
   fullName: string;
+  organizationId?: string;
+  organizationName?: string;
+  role: OrganizationRole;
 }
 
 export interface Invitation {

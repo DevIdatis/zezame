@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { LucideAngularModule, Search, Plus, Check, Folder, Sparkles, X } from 'lucide-angular';
-import { ActivityService } from '../../../../../core/activity.service';
+import { ActivityService } from 'services/activity.service';
 import { Activity } from '../../../../../core/models';
 
 export interface ProjectOption {

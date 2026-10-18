@@ -88,11 +88,12 @@
     <!-- Nav items -->
     <nav class="space-y-2 flex-1">
       @for (item of navItems; track item.path) {
-        <button
-          (click)="navigate(item.path)"
-          class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group"
-          [class]="
-            isActive(item.path)
+        @if (item.canSee) {
+          <button
+            (click)="navigate(item.path)"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group"
+            [class]="
+              isActive(item.path)
               ? 'bg-gradient-to-r from-coral/20 to-yellow/10 text-coral border border-coral/20'
               : 'hover:bg-muted text-muted-foreground hover:text-foreground'
           "
@@ -113,6 +114,7 @@
             </span>
           }
         </button>
+      }
       }
     </nav>
 
@@ -163,16 +165,9 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <div class="relative">
-          <lucide-icon
-            [img]="icons.Search"
-            class="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-          ></lucide-icon>
-          <input
-            type="text"
-            placeholder="Buscar..."
-            class="pl-10 w-48 rounded-xl border border-border/50 bg-card/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50"
-          />
+        <div class="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-card border border-border/80">
+          <lucide-icon [img]="icons.Building" class="w-5 h-5"></lucide-icon>
+          <h5 class="font-medium text-foreground">{{ user().organization }}</h5>
         </div>
         <button class="relative p-2 hover:bg-muted rounded-lg transition-colors">
           <lucide-icon [img]="icons.Bell" class="w-5 h-5"></lucide-icon>

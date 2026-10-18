@@ -8,14 +8,15 @@
       </h1>
       <p class="text-muted-foreground mt-1">Gestiona y organiza todos tus proyectos 🎯</p>
     </div>
-
-    <button
+    @if(isOwner()) {
+      <button
       (click)="showCreate.set(true)"
       class="flex items-center gap-2 bg-gradient-to-r from-coral to-yellow hover:opacity-90 text-white shadow-lg px-4 py-2 rounded-xl font-semibold transition-opacity"
     >
       <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
       Nuevo Proyecto
     </button>
+    }
   </div>
 
   <!-- Stats Row -->

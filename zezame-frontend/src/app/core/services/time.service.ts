@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { BehaviorSubject, Observable, tap, shareReplay } from 'rxjs';
-import { TimeEntry } from './models';
+import { TimeEntry } from '../models';
 import { SignalRService } from './signalR.service';
 
 @Injectable({ providedIn: 'root' })

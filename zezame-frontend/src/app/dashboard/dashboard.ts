@@ -15,16 +15,19 @@ import {
   Menu,
   X,
   UserPlus,
+  Building,
   LucideIconData,
 } from 'lucide-angular';
-import { AuthService } from '../core/auth.service';
+import { AuthService } from '../core/services/auth.service';
 import { User } from '../core/models';
+import { AuthorizationService } from 'services/authorization.service';
 
 interface NavItem {
   icon: LucideIconData;
   label: string;
   path: string;
   badge?: string;
+  canSee: boolean;
 }
 
 interface UserCard {
@@ -33,6 +36,7 @@ interface UserCard {
   avatar: string;
   streak: number;
   level: string;
+  organization: string;
 }
 
 @Component({
@@ -44,15 +48,20 @@ interface UserCard {
 export class Dashboard {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private readonly authorization = inject(AuthorizationService);
 
   // Icons mapping for lucide-angular
-  icons = { Clock, Target, Calendar, TrendingUp, Settings, LogOut, Bell, Search, Flame, Menu, X, UserPlus };
+  icons = { Clock, Target, Calendar, TrendingUp, Settings, LogOut, Bell, Search, Flame, Menu, X, UserPlus, Building };
 
   // State
   mobileMenuOpen = signal(false);
 
   // Usuario autenticado (fuente real)
   private currentUser = signal<User | null>(null);
+
+  readonly isOwner = computed(() =>
+    this.authorization.isOwner()
+  );
 
   constructor() {
     this.auth.currentUser$.pipe(takeUntilDestroyed()).subscribe((u) => this.currentUser.set(u));
@@ -66,6 +75,7 @@ export class Dashboard {
   readonly user = computed<UserCard>(() => {
     const u = this.currentUser();
     const name = u?.fullName ?? 'Usuario';
+    const organization = u?.organizationName ?? 'Sin organización';
     // Avatar generado con dicebear a partir del id (opaco), no del nombre/email
     const seed = u?.id ?? name;
     return {
@@ -74,18 +84,19 @@ export class Dashboard {
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=ffdfbf`,
       streak: this.placeholderStreak,
       level: this.placeholderLevel,
+      organization,
     };
   });
 
   readonly firstName = computed(() => this.user().name.split(' ')[0]);
 
   readonly navItems: NavItem[] = [
-    { icon: this.icons.Clock, label: 'Timer', path: '/dashboard' },
-    { icon: this.icons.Target, label: 'Proyectos', path: '/dashboard/projects' },
-    { icon: this.icons.Calendar, label: 'Calendario', path: '/dashboard/calendar' },
-    { icon: this.icons.TrendingUp, label: 'Reportes', path: '/dashboard/reports' },
-    { icon: this.icons.UserPlus, label: 'Invitaciones', path: '/dashboard/invitations' },
-    { icon: this.icons.Settings, label: 'Ajustes', path: '/dashboard/settings' },
+    { icon: this.icons.Clock, label: 'Timer', path: '/dashboard', canSee: true },
+    { icon: this.icons.Target, label: 'Proyectos', path: '/dashboard/projects', canSee: true },
+    { icon: this.icons.Calendar, label: 'Calendario', path: '/dashboard/calendar', canSee: true },
+    { icon: this.icons.TrendingUp, label: 'Reportes', path: '/dashboard/reports', canSee: true },
+    { icon: this.icons.UserPlus, label: 'Invitaciones', path: '/dashboard/invitations', canSee: this.isOwner() },
+    { icon: this.icons.Settings, label: 'Ajustes', path: '/dashboard/settings', canSee: true },
   ];
 
   isActive(path: string): boolean {

@@ -15,9 +15,10 @@ import {
   CheckCircle2,
   ArrowUpRight,
 } from 'lucide-angular';
-import { ProjectService } from '../../../core/project.service';
+import { ProjectService } from 'services/project.service';
 import { Project } from '../../../core/models';
 import { ProjectFormDialog } from './components/project-form-dialog/project-form-dialog';
+import { AuthorizationService } from 'services/authorization.service';
 
 type ViewMode = 'grid' | 'list';
 type FilterKey = 'all' | 'active' | 'paused' | 'completed';
@@ -30,8 +31,9 @@ type FilterKey = 'all' | 'active' | 'paused' | 'completed';
 })
 export class Projects implements OnInit {
   private projectService = inject(ProjectService);
+  private authorization = inject(AuthorizationService);
   showCreate = signal(false);
-
+  readonly isOwner = computed(() => this.authorization.isOwner());
   icons = {
     Target,
     Plus,

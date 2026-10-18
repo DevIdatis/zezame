@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { InvitationService } from '../../../core/invitation.service';
+import { InvitationService } from '../../../core/services/invitation.service';
 import { Invitation } from '../../../core/models';
 
 @Component({

@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, XCircle, X } from 'lucide-angular';
 import { Observable } from 'rxjs';
-import { ErrorModalService, ErrorMsg } from '../../core/error-modal.service';
+import { ErrorModalService, ErrorMsg } from '../../core/services/error-modal.service';
 
 @Component({
   selector: 'app-error-modal',

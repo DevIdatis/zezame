@@ -54,6 +54,7 @@ namespace Zezame.Api.Services {
                 FullName = dto.FullName,
                 Role = OrganizationRole.Owner,
                 OrganizationId = organization.Id,
+                Organization = organization,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -231,6 +232,7 @@ namespace Zezame.Api.Services {
                 new Claim(ClaimTypes.Role, user.Role.ToString()),
                 new Claim("role", ((int)user.Role).ToString()),
                 new Claim("org_id", user.OrganizationId?.ToString() ?? string.Empty),
+                new Claim("org_name", user.Organization!.Name ?? string.Empty),
                 new Claim("is_platform_admin", user.IsPlatformAdmin ? "true" : "false")
             };
 

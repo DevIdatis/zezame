@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { AuthService } from './auth.service';
+import { AuthService } from 'services/auth.service';
 import { Subject } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 
 @Injectable({ providedIn: 'root' })

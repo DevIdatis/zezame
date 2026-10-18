@@ -18,7 +18,7 @@ import {
   Zap,
   LucideIconData,
 } from 'lucide-angular';
-import { ReportService } from '../../../core/report.service';
+import { ReportService } from '../../../core/services/report.service';
 import {
   CalendarDay,
   ProjectBreakdown,

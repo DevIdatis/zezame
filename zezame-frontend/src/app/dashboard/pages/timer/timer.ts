@@ -14,9 +14,9 @@ import {
   Sparkles,
   LucideIconData,
 } from 'lucide-angular';
-import { TimeService } from '../../../core/time.service';
-import { AuthService } from '../../../core/auth.service';
-import { ProjectService } from '../../../core/project.service';
+import { TimeService } from 'services/time.service';
+import { AuthService } from 'services/auth.service';
+import { ProjectService } from 'services/project.service';
 import { distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { EntryType, Project, TimeEntry } from '../../../core/models';
 import { BreakdownPeriod, BreakDownDialog } from './components/break-down-dialog/break-down-dialog';

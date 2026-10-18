@@ -9,8 +9,8 @@ import {
   signal,
 } from '@angular/core';
 import { LucideAngularModule, X, Clock } from 'lucide-angular';
-import { TimeService } from '../../../../../core/time.service';
-import { ProjectService } from '../../../../../core/project.service';
+import { TimeService } from '../../../../../core/services/time.service';
+import { ProjectService } from 'services/project.service';
 import { Project } from '../../../../../core/models';
 
 @Component({
