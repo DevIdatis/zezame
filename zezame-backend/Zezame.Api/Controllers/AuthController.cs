@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Zezame.Api.Services;
+using Microsoft.AspNetCore.RateLimiting;
 using Zezame.Api.Models.DTOs;
+using Zezame.Api.Services;
 using static Zezame.Api.Models.AuthDtos;
 
 namespace Zezame.Api.Controllers {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableRateLimiting("auth")]
     public class AuthController : ControllerBase {
         private readonly AuthService _auth;
 

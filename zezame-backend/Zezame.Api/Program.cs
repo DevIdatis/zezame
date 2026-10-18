@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using Zezame.Api.Hubs;
 using Zezame.Api.Middleware;
 using Zezame.Api.Services;
@@ -71,6 +72,20 @@ builder.Services.AddAuthorization(options => {
         policy.RequireRole("Admin"));
 });
 
+// Rate limiting: limita los intentos en endpoints de autenticación por IP
+// para mitigar fuerza bruta y abuso. Política "auth" aplicada en AuthController.
+builder.Services.AddRateLimiter(options => {
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+});
+
 builder.Services.AddSignalR();
 
 // Repositorios
@@ -109,6 +124,7 @@ app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapHub<TimeHub>("/timeHub");
 app.MapControllers();
