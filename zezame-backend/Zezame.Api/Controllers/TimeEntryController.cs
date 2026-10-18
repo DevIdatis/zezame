@@ -19,7 +19,7 @@ namespace Zezame.Api.Controllers {
             return Ok(await _svc.ListAsync(UserGuid(), fromUtc, toUtc));
         }
 
-        [HttpPost]
+        [HttpPost("createManual")]
         public async Task<ActionResult<EntryVm>> CreateManual(CreateManualEntryDto dto)
             => Ok(await _svc.CreateManualAsync(UserGuid(), dto));
 

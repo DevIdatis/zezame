@@ -78,6 +78,7 @@ namespace Zezame.Api.Services {
             var now = DateTime.UtcNow;
             var entry = new TimeEntry {
                 UserId = userId,
+                OrganizationId = await ResolveOrganizationIdAsync(userId),
                 StartTime = start,
                 EndTime = end,
                 DurationMin = (int)(end - start).TotalMinutes,

@@ -75,7 +75,7 @@ export class TimeService {
     activityId?: string | null;
   }): Observable<TimeEntry> {
     this.invalidateTodayCache();
-    return this.http.post<TimeEntry>(`${this.api}/timeEntries`, body);
+    return this.http.post<TimeEntry>(`${this.api}/timeEntries/createManual`, body);
   }
 
   start(description?: string, projectId?: string, activityId?: string): Observable<void> {
