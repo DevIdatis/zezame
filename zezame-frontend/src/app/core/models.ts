@@ -19,6 +19,20 @@ export interface User {
   fullName: string;
 }
 
+export interface Invitation {
+  id: string;
+  email: string;
+  role: string; // 'Employee' | 'Manager' | 'Admin'
+  status: string; // 'Pending' | 'Accepted' | 'Revoked'
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface CreateInvitationRequest {
+  email: string;
+  role: string;
+}
+
 export interface TimeEntry {
   id: string;
   userId: string;

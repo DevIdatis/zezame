@@ -1,0 +1,52 @@
+<div class="min-h-screen flex items-center justify-center p-4 bg-background">
+  <div class="w-full max-w-md p-8 rounded-3xl border border-border/50 shadow-xl bg-gradient-to-br from-background via-background to-coral/5">
+    @if (!token) {
+      <div class="text-center">
+        <div class="text-5xl mb-4">⚠️</div>
+        <h1 class="text-2xl font-display mb-2">Invitación no válida</h1>
+        <p class="text-muted-foreground mb-6">Falta el token de invitación. Pide a quien te invitó que te reenvíe el enlace.</p>
+        <a routerLink="/main" class="inline-block h-12 px-6 leading-[3rem] rounded-xl border-2 border-border font-semibold">Volver al inicio</a>
+      </div>
+    } @else {
+      <h1 class="text-2xl font-display mb-2 text-center">Únete a tu equipo 🎉</h1>
+      <p class="text-muted-foreground mb-6 text-center">Completa tus datos para activar tu cuenta.</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+        <div class="space-y-2">
+          <label class="text-sm font-medium">Nombre completo</label>
+          <input
+            type="text"
+            formControlName="fullName"
+            placeholder="Tu nombre"
+            class="h-12 w-full rounded-xl border-2 border-border/50 bg-background/50 px-4 focus:border-coral"
+          />
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm font-medium">Contraseña</label>
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            class="h-12 w-full rounded-xl border-2 border-border/50 bg-background/50 px-4 focus:border-coral"
+          />
+          @if (form.get('password')?.invalid && form.get('password')?.touched) {
+            <span class="text-xs text-coral">Mínimo 8 caracteres.</span>
+          }
+        </div>
+
+        @if (error()) {
+          <p class="text-sm text-coral bg-coral/10 rounded-xl px-4 py-2">{{ error() }}</p>
+        }
+
+        <button
+          type="submit"
+          [disabled]="form.invalid || submitting()"
+          class="w-full h-12 rounded-xl bg-gradient-to-r from-coral to-yellow text-white font-semibold disabled:opacity-60"
+        >
+          {{ submitting() ? 'Activando…' : 'Activar mi cuenta' }}
+        </button>
+      </form>
+    }
+  </div>
+</div>

@@ -14,6 +14,7 @@ import {
   Flame,
   Menu,
   X,
+  UserPlus,
   LucideIconData,
 } from 'lucide-angular';
 import { AuthService } from '../core/auth.service';
@@ -45,7 +46,7 @@ export class Dashboard {
   private router = inject(Router);
 
   // Icons mapping for lucide-angular
-  icons = { Clock, Target, Calendar, TrendingUp, Settings, LogOut, Bell, Search, Flame, Menu, X };
+  icons = { Clock, Target, Calendar, TrendingUp, Settings, LogOut, Bell, Search, Flame, Menu, X, UserPlus };
 
   // State
   mobileMenuOpen = signal(false);
@@ -83,6 +84,7 @@ export class Dashboard {
     { icon: this.icons.Target, label: 'Proyectos', path: '/dashboard/projects' },
     { icon: this.icons.Calendar, label: 'Calendario', path: '/dashboard/calendar' },
     { icon: this.icons.TrendingUp, label: 'Reportes', path: '/dashboard/reports' },
+    { icon: this.icons.UserPlus, label: 'Invitaciones', path: '/dashboard/invitations' },
     { icon: this.icons.Settings, label: 'Ajustes', path: '/dashboard/settings' },
   ];
 

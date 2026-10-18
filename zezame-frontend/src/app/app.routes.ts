@@ -18,6 +18,12 @@ export const routes: Routes = [
   },
 
   {
+    path: 'accept-invitation',
+    loadComponent: () =>
+      import('./auth/accept-invitation/accept-invitation').then((m) => m.AcceptInvitation),
+  },
+
+  {
     path: 'dashboard',
     canActivate: [authGuard],
     loadComponent: () => import('./dashboard/dashboard').then((m) => m.Dashboard),
@@ -37,6 +43,11 @@ export const routes: Routes = [
       {
         path: 'reports',
         loadComponent: () => import('./dashboard/pages/reports/reports').then((m) => m.Reports),
+      },
+      {
+        path: 'invitations',
+        loadComponent: () =>
+          import('./dashboard/pages/invitations/invitations').then((m) => m.Invitations),
       },
       {
         path: 'settings',

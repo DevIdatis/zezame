@@ -163,6 +163,13 @@ export class AuthService {
     return this.http.post(`${this.api}/auth/reset-password`, { token, newPassword });
   }
 
+  // La persona invitada crea su cuenta y queda logueada (recibe el par de tokens).
+  acceptInvitation(token: string, fullName: string, password: string): Observable<TokenResponse> {
+    return this.http
+      .post<TokenResponse>(`${this.api}/auth/accept-invitation`, { token, fullName, password })
+      .pipe(tap((res) => this.handleAuth(res)));
+  }
+
   // Actualiza en memoria el usuario actual (p. ej. tras editar el perfil)
   patchUser(patch: Partial<User>): void {
     const current = this.user$.value;

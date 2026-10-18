@@ -13,7 +13,7 @@ export class ThemeService {
 
   init(): void {
     if (!this.isBrowser) return;
-    const stored = (localStorage.getItem(this.key) as Theme | null) ?? 'system';
+    const stored = (localStorage.getItem(this.key) as Theme | null) ?? 'light'; //cambiar por system
     this.theme.set(stored);
     this.apply(stored);
 

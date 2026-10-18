@@ -1,0 +1,85 @@
+<div class="max-w-3xl mx-auto p-4 space-y-6">
+  <header>
+    <h1 class="text-2xl font-display font-bold">Invitaciones</h1>
+    <p class="text-muted-foreground">Invita a personas a tu organización y gestiona sus invitaciones.</p>
+  </header>
+
+  <!-- Nueva invitación -->
+  <form [formGroup]="form" (ngSubmit)="create()" class="flex flex-wrap gap-3 items-end p-4 rounded-2xl border border-border/50 bg-card">
+    <div class="flex-1 min-w-[12rem] space-y-1">
+      <label class="text-sm font-medium">Email</label>
+      <input
+        type="email"
+        formControlName="email"
+        placeholder="persona@empresa.com"
+        class="h-11 w-full rounded-xl border-2 border-border/50 bg-background/50 px-3 focus:border-coral"
+      />
+    </div>
+    <div class="space-y-1">
+      <label class="text-sm font-medium">Rol</label>
+      <select formControlName="role" class="h-11 rounded-xl border-2 border-border/50 bg-background/50 px-3 focus:border-coral">
+        <option value="Employee">Employee</option>
+        <option value="Manager">Manager</option>
+        <option value="Admin">Admin</option>
+      </select>
+    </div>
+    <button
+      type="submit"
+      [disabled]="form.invalid"
+      class="h-11 px-5 rounded-xl bg-gradient-to-r from-coral to-yellow text-white font-semibold disabled:opacity-60"
+    >
+      Invitar
+    </button>
+  </form>
+
+  @if (message()) {
+    <p class="text-sm text-green-700 bg-green-500/10 rounded-xl px-4 py-2">{{ message() }}</p>
+  }
+  @if (error()) {
+    <p class="text-sm text-coral bg-coral/10 rounded-xl px-4 py-2">{{ error() }}</p>
+  }
+
+  <!-- Lista -->
+  @if (loading()) {
+    <p class="text-muted-foreground">Cargando…</p>
+  } @else if (invitations().length === 0) {
+    <p class="text-muted-foreground">Aún no hay invitaciones.</p>
+  } @else {
+    <div class="overflow-x-auto rounded-2xl border border-border/50">
+      <table class="w-full text-sm">
+        <thead class="bg-muted/50 text-muted-foreground">
+          <tr>
+            <th class="text-left p-3">Email</th>
+            <th class="text-left p-3">Rol</th>
+            <th class="text-left p-3">Estado</th>
+            <th class="text-left p-3">Caduca</th>
+            <th class="text-right p-3">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inv of invitations(); track inv.id) {
+            <tr class="border-t border-border/50">
+              <td class="p-3">{{ inv.email }}</td>
+              <td class="p-3">{{ inv.role }}</td>
+              <td class="p-3">
+                <span
+                  class="text-xs font-medium px-2 py-0.5 rounded-full"
+                  [class]="inv.status === 'Pending' ? 'bg-yellow/20 text-yellow-700' : inv.status === 'Accepted' ? 'bg-green-500/15 text-green-700' : 'bg-muted text-muted-foreground'"
+                >
+                  {{ inv.status }}
+                </span>
+              </td>
+              <td class="p-3">{{ inv.expiresAt | date: 'short' }}</td>
+              <td class="p-3 text-right space-x-2">
+                @if (inv.status === 'Pending') {
+                  <button (click)="resend(inv)" class="text-coral font-medium">Reenviar</button>
+                  <button (click)="revoke(inv)" class="text-muted-foreground font-medium">Revocar</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
