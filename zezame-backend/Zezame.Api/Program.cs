@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Zezame.Api.Hubs;
 using Zezame.Api.Middleware;
+using Zezame.Api.Multitenancy;
 using Zezame.Api.Services;
 using Zezame.Api.Services.Interfaces;
 using Zezame.Domain.Interfaces;
@@ -97,6 +98,9 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
 
+// Contexto de tenant (organización de la petición), consumido por el query filter de EF.
+builder.Services.AddScoped<ITenantContext, TenantContext>();
+
 // Servicios
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<AuthService>();
@@ -126,6 +130,10 @@ app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Resolución de tenant: tras autenticar, fija la organización de la petición.
+app.UseMiddleware<TenantResolutionMiddleware>();
+
 app.UseRateLimiter();
 
 app.MapHub<TimeHub>("/timeHub");

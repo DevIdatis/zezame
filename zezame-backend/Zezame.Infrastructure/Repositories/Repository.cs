@@ -27,7 +27,9 @@ namespace Zezame.Infrastructure.Repositories {
         }
 
         public virtual async Task DeleteAsync(Guid id) {
-            var entity = await _dbSet.FindAsync(id);
+            // FirstOrDefaultAsync aplica los filtros globales (soft-delete y tenant),
+            // a diferencia de FindAsync, que los ignora.
+            var entity = await _dbSet.FirstOrDefaultAsync(e => e.Id == id);
             if (entity != null) {
                 entity.IsDeleted = true;
                 entity.UpdatedAt = DateTime.UtcNow;

@@ -2,9 +2,11 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Zezame.Domain.Base;
 using Zezame.Domain.Entities;
+using Zezame.Domain.Interfaces;
 
 namespace Zezame.Infrastructure.Persistence {
     public class ZezameDbContext : DbContext {
+        private readonly ITenantContext _tenant;
         public DbSet<Organization> Organizations => Set<Organization>();
         public DbSet<User> Users => Set<User>();
         public DbSet<Project> Projects => Set<Project>();
@@ -12,8 +14,10 @@ namespace Zezame.Infrastructure.Persistence {
         public DbSet<Activity> Activities => Set<Activity>();
         public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
 
-        public ZezameDbContext(DbContextOptions<ZezameDbContext> options)
-            : base(options) { }
+        public ZezameDbContext(DbContextOptions<ZezameDbContext> options, ITenantContext tenant)
+            : base(options) { 
+            _tenant = tenant;
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             // EXTENSION uuid-ossp
@@ -37,12 +41,21 @@ namespace Zezame.Infrastructure.Persistence {
             // devuelve registros con IsDeleted = true salvo que se ignore el filtro
             // explícitamente. Todas las entidades son consistentes (comparten IsDeleted),
             // así que los Include() entre ellas no generan avisos de EF.
+            // Soft-delete global. Organization, User y ProjectMember NO se filtran por
+            // tenant: el login/registro buscan usuarios por email ANTES de autenticar,
+            // y la organización se resuelve por su clave.
             modelBuilder.Entity<Organization>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<Project>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<ProjectMember>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<Activity>().HasQueryFilter(e => !e.IsDeleted);
-            modelBuilder.Entity<TimeEntry>().HasQueryFilter(e => !e.IsDeleted);
+
+            // Aislamiento multi-tenant (fail-closed): sin organización resuelta,
+            // CurrentOrganizationId es null y estas consultas no devuelven nada.
+            modelBuilder.Entity<Project>().HasQueryFilter(
+                e => !e.IsDeleted && e.OrganizationId == _tenant.CurrentOrganizationId);
+            modelBuilder.Entity<Activity>().HasQueryFilter(
+                e => !e.IsDeleted && e.OrganizationId == _tenant.CurrentOrganizationId);
+            modelBuilder.Entity<TimeEntry>().HasQueryFilter(
+                e => !e.IsDeleted && e.OrganizationId == _tenant.CurrentOrganizationId);
 
             // Índices únicos
             modelBuilder.Entity<User>()
