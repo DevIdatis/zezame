@@ -67,11 +67,8 @@ export class AuthService {
   }
 
   autoLogin(): void {
-    console.log('autoLogin iniciado. ¿Es cliente?:', this.isBrowser);
-
     if (!this.isBrowser) {
-      console.log('SSR: Saltando autoLogin');
-      // En SSR, inicializamos inmediatamente pero sin usuario
+      // En SSR inicializamos sin usuario; la validación real la hace el cliente.
       this.user$.next(null);
       this.initialized$.next(true);
       return;
@@ -81,14 +78,9 @@ export class AuthService {
     const token = localStorage.getItem('token');
     const exp = localStorage.getItem('expires');
 
-    console.log('Cliente - Token encontrado:', !!token);
-    console.log('Cliente - Expiración:', exp);
-
     if (!token || !exp || new Date() >= new Date(exp)) {
-      console.log('Token inválido o expirado');
       this.user$.next(null);
     } else {
-      console.log('Token válido, autenticando');
       this.handleAuth({ token, expires: exp });
     }
 
