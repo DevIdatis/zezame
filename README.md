@@ -105,9 +105,9 @@ roles elevados los concede un administrador. Contraseñas con **BCrypt** y clave
 La app espera la base `zezame_db` en el puerto 5432.
 
 ```bash
-docker run --name db -e POSTGRES_USER=postgres \
+docker run --name zezame-db -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=masterkey -e POSTGRES_DB=zezame_db \
-  -p 5432:5432 -d postgres:15
+  -p 5432:5432 -d postgres
 ```
 
 ### 2. Backend (.NET)
