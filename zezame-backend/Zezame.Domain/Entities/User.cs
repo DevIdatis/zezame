@@ -21,6 +21,8 @@ namespace Zezame.Domain.Entities {
         // Administrador de la plataforma (nivel SaaS, por encima de las organizaciones).
         // No pertenece a ninguna organización: OrganizationId es null en ese caso.
         public bool IsPlatformAdmin { get; set; } = false;
+        // Un usuario desactivado no puede iniciar sesión ni renovar tokens.
+        public bool IsActive { get; set; } = true;
         public string? Timezone { get; set; }
         public string? Language { get; set; }
         // Organización a la que pertenece (null solo para Platform Admin).

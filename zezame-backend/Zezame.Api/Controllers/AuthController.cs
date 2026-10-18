@@ -24,6 +24,16 @@ namespace Zezame.Api.Controllers {
         public async Task<ActionResult<TokenDto>> Login(LoginDto dto)
             => Ok(await _auth.LoginAsync(dto));
 
+        [HttpPost("refresh")]
+        public async Task<ActionResult<TokenDto>> Refresh(RefreshRequest dto)
+            => Ok(await _auth.RefreshAsync(dto.RefreshToken));
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(RefreshRequest dto) {
+            await _auth.LogoutAsync(dto.RefreshToken);
+            return NoContent();
+        }
+
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto dto) {

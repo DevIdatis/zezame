@@ -13,6 +13,7 @@ namespace Zezame.Infrastructure.Persistence {
         public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>();
         public DbSet<Activity> Activities => Set<Activity>();
         public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         public ZezameDbContext(DbContextOptions<ZezameDbContext> options, ITenantContext tenant)
             : base(options) { 
@@ -47,6 +48,7 @@ namespace Zezame.Infrastructure.Persistence {
             modelBuilder.Entity<Organization>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<ProjectMember>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<RefreshToken>().HasQueryFilter(e => !e.IsDeleted);
 
             // Aislamiento multi-tenant (fail-closed): sin organización resuelta,
             // CurrentOrganizationId es null y estas consultas no devuelven nada.
@@ -154,6 +156,26 @@ namespace Zezame.Infrastructure.Persistence {
 
             modelBuilder.Entity<ProjectMember>()
                 .HasIndex(pm => pm.ProjectId);
+
+            // Refresh tokens
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(rt => rt.User)
+                .WithMany()
+                .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RefreshToken>()
+                .Property(rt => rt.TokenHash)
+                .HasMaxLength(128)
+                .IsRequired();
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(rt => rt.TokenHash)
+                .IsUnique();
+
+            // IsActive por defecto true: las filas existentes quedan activas al migrar.
+            modelBuilder.Entity<User>().Property(u => u.IsActive).HasDefaultValue(true);
+            modelBuilder.Entity<Organization>().Property(o => o.IsActive).HasDefaultValue(true);
         }
 
         public override int SaveChanges() {

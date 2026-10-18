@@ -11,8 +11,9 @@ namespace Zezame.Api.Models {
             string OrganizationName
         );
 
-        public record TokenDto(string Token, DateTime Expires, UserDto User);
+        public record TokenDto(string Token, DateTime Expires, string RefreshToken, UserDto User);
         public record UserDto(Guid Id, string Email, string FullName, string Role);
         public record LoginDto(string Email, string Password);
+        public record RefreshRequest(string RefreshToken);
     }
 }
