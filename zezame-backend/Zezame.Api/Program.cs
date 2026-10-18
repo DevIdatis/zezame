@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
+using Zezame.Api.Email;
 using Zezame.Api.Hubs;
 using Zezame.Api.Middleware;
 using Zezame.Api.Multitenancy;
@@ -98,9 +99,14 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 
 // Contexto de tenant (organización de la petición), consumido por el query filter de EF.
 builder.Services.AddScoped<ITenantContext, TenantContext>();
+
+// Envío de email: implementación de desarrollo (registra en log). En producción,
+// sustituir por un IEmailSender real (SMTP/proveedor) sin tocar la lógica.
+builder.Services.AddScoped<IEmailSender, LoggingEmailSender>();
 
 // Servicios
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();

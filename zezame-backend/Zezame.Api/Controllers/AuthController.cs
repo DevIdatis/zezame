@@ -34,6 +34,30 @@ namespace Zezame.Api.Controllers {
             return NoContent();
         }
 
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail(VerifyEmailRequest dto) {
+            await _auth.VerifyEmailAsync(dto.Token);
+            return NoContent();
+        }
+
+        [HttpPost("resend-verification")]
+        public async Task<IActionResult> ResendVerification(ResendVerificationRequest dto) {
+            await _auth.ResendVerificationAsync(dto.Email);
+            return NoContent(); // respuesta neutra: no revela si el email existe
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest dto) {
+            await _auth.ForgotPasswordAsync(dto.Email);
+            return NoContent(); // respuesta neutra: no revela si el email existe
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest dto) {
+            await _auth.ResetPasswordAsync(dto.Token, dto.NewPassword);
+            return NoContent();
+        }
+
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto dto) {

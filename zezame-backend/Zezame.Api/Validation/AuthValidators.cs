@@ -35,4 +35,29 @@ namespace Zezame.Api.Validation {
             RuleFor(x => x.NewPassword).Password();
         }
     }
+
+    public class VerifyEmailRequestValidator : AbstractValidator<VerifyEmailRequest> {
+        public VerifyEmailRequestValidator() {
+            RuleFor(x => x.Token).NotEmpty();
+        }
+    }
+
+    public class ResendVerificationRequestValidator : AbstractValidator<ResendVerificationRequest> {
+        public ResendVerificationRequestValidator() {
+            RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        }
+    }
+
+    public class ForgotPasswordRequestValidator : AbstractValidator<ForgotPasswordRequest> {
+        public ForgotPasswordRequestValidator() {
+            RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        }
+    }
+
+    public class ResetPasswordRequestValidator : AbstractValidator<ResetPasswordRequest> {
+        public ResetPasswordRequestValidator() {
+            RuleFor(x => x.Token).NotEmpty();
+            RuleFor(x => x.NewPassword).Password();
+        }
+    }
 }

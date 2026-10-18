@@ -15,5 +15,9 @@ namespace Zezame.Api.Models {
         public record UserDto(Guid Id, string Email, string FullName, string Role);
         public record LoginDto(string Email, string Password);
         public record RefreshRequest(string RefreshToken);
+        public record VerifyEmailRequest(string Token);
+        public record ResendVerificationRequest(string Email);
+        public record ForgotPasswordRequest(string Email);
+        public record ResetPasswordRequest(string Token, string NewPassword);
     }
 }

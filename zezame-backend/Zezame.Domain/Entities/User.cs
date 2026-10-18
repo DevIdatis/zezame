@@ -23,6 +23,9 @@ namespace Zezame.Domain.Entities {
         public bool IsPlatformAdmin { get; set; } = false;
         // Un usuario desactivado no puede iniciar sesión ni renovar tokens.
         public bool IsActive { get; set; } = true;
+        // Email verificado. Hoy no bloquea el login (verificación "soft"); queda
+        // registrado para el flujo de verificación y para endurecer más adelante.
+        public bool EmailConfirmed { get; set; }
         public string? Timezone { get; set; }
         public string? Language { get; set; }
         // Organización a la que pertenece (null solo para Platform Admin).

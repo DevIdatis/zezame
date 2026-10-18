@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Zezame.Api.Email;
 using Zezame.Api.Models.DTOs;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
@@ -13,15 +14,23 @@ namespace Zezame.Api.Services {
         IUserRepository users,
         IRepository<Organization> orgs,
         IRefreshTokenRepository refreshTokens,
+        IUserTokenRepository userTokens,
+        IEmailSender email,
         IConfiguration cfg) {
 
         private readonly IUserRepository _users = users;
         private readonly IRepository<Organization> _orgs = orgs;
         private readonly IRefreshTokenRepository _refreshTokens = refreshTokens;
+        private readonly IUserTokenRepository _userTokens = userTokens;
+        private readonly IEmailSender _email = email;
         private readonly IConfiguration _cfg = cfg;
+
+        private static readonly TimeSpan VerificationTtl = TimeSpan.FromHours(48);
+        private static readonly TimeSpan ResetTtl = TimeSpan.FromHours(2);
 
         private int AccessMinutes => int.TryParse(_cfg["Jwt:AccessTokenMinutes"], out var m) ? m : 15;
         private int RefreshDays => int.TryParse(_cfg["Jwt:RefreshTokenDays"], out var d) ? d : 7;
+        private string FrontendUrl => (_cfg["FrontendUrl"] ?? "http://localhost:4200").TrimEnd('/');
 
         public async Task<TokenDto> RegisterAsync(RegisterDto dto) {
             var email = dto.Email.ToLower();
@@ -47,6 +56,9 @@ namespace Zezame.Api.Services {
             };
 
             await _users.AddAsync(user);
+
+            await SendVerificationEmailAsync(user);
+
             return await IssueTokensAsync(user);
         }
 
@@ -110,6 +122,74 @@ namespace Zezame.Api.Services {
             await _refreshTokens.RevokeAllActiveForUserAsync(userId, DateTime.UtcNow);
         }
 
+        public async Task VerifyEmailAsync(string rawToken) {
+            var token = await _userTokens.GetByHashAsync(UserTokenPurpose.EmailVerification, HashToken(rawToken));
+            if (token is null || !token.IsValid)
+                throw new InvalidOperationException("Token de verificación no válido o caducado");
+
+            token.UsedAt = DateTime.UtcNow;
+            await _userTokens.UpdateAsync(token);
+
+            token.User.EmailConfirmed = true;
+            await _users.UpdateAsync(token.User);
+        }
+
+        // No revela si el email existe (evita enumeración de usuarios).
+        public async Task ResendVerificationAsync(string email) {
+            var user = await _users.GetByEmailAsync(email.ToLower());
+            if (user is { EmailConfirmed: false })
+                await SendVerificationEmailAsync(user);
+        }
+
+        // No revela si el email existe.
+        public async Task ForgotPasswordAsync(string email) {
+            var user = await _users.GetByEmailAsync(email.ToLower());
+            if (user is null) return;
+
+            var raw = await IssueUserTokenAsync(user, UserTokenPurpose.PasswordReset, ResetTtl);
+            await _email.SendAsync(user.Email, "Restablece tu contraseña",
+                $"Para restablecer tu contraseña entra aquí (caduca en 2 horas):\n" +
+                $"{FrontendUrl}/reset-password?token={raw}");
+        }
+
+        public async Task ResetPasswordAsync(string rawToken, string newPassword) {
+            var token = await _userTokens.GetByHashAsync(UserTokenPurpose.PasswordReset, HashToken(rawToken));
+            if (token is null || !token.IsValid)
+                throw new InvalidOperationException("Token de restablecimiento no válido o caducado");
+
+            token.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _users.UpdateAsync(token.User);
+
+            token.UsedAt = DateTime.UtcNow;
+            await _userTokens.UpdateAsync(token);
+
+            // Restablecer la contraseña cierra el resto de sesiones del usuario.
+            await _refreshTokens.RevokeAllActiveForUserAsync(token.UserId, DateTime.UtcNow);
+        }
+
+        private async Task SendVerificationEmailAsync(User user) {
+            var raw = await IssueUserTokenAsync(user, UserTokenPurpose.EmailVerification, VerificationTtl);
+            await _email.SendAsync(user.Email, "Verifica tu email",
+                $"Confirma tu cuenta entrando aquí (caduca en 48 horas):\n" +
+                $"{FrontendUrl}/verify-email?token={raw}");
+        }
+
+        // Invalida los tokens pendientes del mismo propósito y emite uno nuevo.
+        // Devuelve el token en claro (solo se guarda su hash).
+        private async Task<string> IssueUserTokenAsync(User user, UserTokenPurpose purpose, TimeSpan ttl) {
+            await _userTokens.InvalidatePendingAsync(user.Id, purpose, DateTime.UtcNow);
+
+            var raw = GenerateUrlToken();
+            await _userTokens.AddAsync(new UserToken {
+                UserId = user.Id,
+                Purpose = purpose,
+                TokenHash = HashToken(raw),
+                ExpiresAt = DateTime.UtcNow.Add(ttl),
+                CreatedAt = DateTime.UtcNow
+            });
+            return raw;
+        }
+
         // Un usuario o una organización desactivados no pueden iniciar sesión ni renovar.
         private async Task EnsureActiveAsync(User user) {
             if (!user.IsActive)
@@ -164,6 +244,11 @@ namespace Zezame.Api.Services {
 
         private static string GenerateRefreshTokenRaw()
             => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+        // Token aleatorio apto para URL (sin +, / ni =) para verificación/reset.
+        private static string GenerateUrlToken()
+            => Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+                .Replace('+', '-').Replace('/', '_').TrimEnd('=');
 
         private static string HashToken(string raw)
             => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(raw)));

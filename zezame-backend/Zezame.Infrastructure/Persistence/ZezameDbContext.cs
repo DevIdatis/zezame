@@ -7,6 +7,7 @@ using Zezame.Domain.Interfaces;
 namespace Zezame.Infrastructure.Persistence {
     public class ZezameDbContext : DbContext {
         private readonly ITenantContext _tenant;
+
         public DbSet<Organization> Organizations => Set<Organization>();
         public DbSet<User> Users => Set<User>();
         public DbSet<Project> Projects => Set<Project>();
@@ -14,9 +15,10 @@ namespace Zezame.Infrastructure.Persistence {
         public DbSet<Activity> Activities => Set<Activity>();
         public DbSet<TimeEntry> TimeEntries => Set<TimeEntry>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+        public DbSet<UserToken> UserTokens => Set<UserToken>();
 
         public ZezameDbContext(DbContextOptions<ZezameDbContext> options, ITenantContext tenant)
-            : base(options) { 
+            : base(options) {
             _tenant = tenant;
         }
 
@@ -48,7 +50,11 @@ namespace Zezame.Infrastructure.Persistence {
             modelBuilder.Entity<Organization>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<ProjectMember>().HasQueryFilter(e => !e.IsDeleted);
+            // Los refresh token no se filtran por tenant (el refresh ocurre sin
+            // organización resuelta); sí por soft-delete.
             modelBuilder.Entity<RefreshToken>().HasQueryFilter(e => !e.IsDeleted);
+            // Los tokens de verificación/reset se usan sin autenticar: sin filtro de tenant.
+            modelBuilder.Entity<UserToken>().HasQueryFilter(e => !e.IsDeleted);
 
             // Aislamiento multi-tenant (fail-closed): sin organización resuelta,
             // CurrentOrganizationId es null y estas consultas no devuelven nada.
@@ -176,6 +182,25 @@ namespace Zezame.Infrastructure.Persistence {
             // IsActive por defecto true: las filas existentes quedan activas al migrar.
             modelBuilder.Entity<User>().Property(u => u.IsActive).HasDefaultValue(true);
             modelBuilder.Entity<Organization>().Property(o => o.IsActive).HasDefaultValue(true);
+
+            // EmailConfirmed por defecto true: los usuarios existentes se consideran
+            // verificados; los nuevos registros insertan false explícitamente.
+            modelBuilder.Entity<User>().Property(u => u.EmailConfirmed).HasDefaultValue(true);
+
+            // Tokens de usuario (verificación de email / reset de contraseña)
+            modelBuilder.Entity<UserToken>()
+                .HasOne(t => t.User)
+                .WithMany()
+                .HasForeignKey(t => t.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserToken>()
+                .Property(t => t.TokenHash)
+                .HasMaxLength(128)
+                .IsRequired();
+
+            modelBuilder.Entity<UserToken>()
+                .HasIndex(t => new { t.Purpose, t.TokenHash });
         }
 
         public override int SaveChanges() {
