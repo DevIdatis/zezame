@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +28,9 @@ builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", p => p
     .AllowCredentials()));
 
 builder.Services.AddControllers();
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddDbContext<ZezameDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
