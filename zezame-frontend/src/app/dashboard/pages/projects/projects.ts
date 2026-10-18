@@ -17,18 +17,20 @@ import {
 } from 'lucide-angular';
 import { ProjectService } from '../../../core/project.service';
 import { Project } from '../../../core/models';
+import { ProjectFormDialog } from './components/project-form-dialog/project-form-dialog';
 
 type ViewMode = 'grid' | 'list';
 type FilterKey = 'all' | 'active' | 'paused' | 'completed';
 
 @Component({
   selector: 'app-projects',
-  imports: [LucideAngularModule, DatePipe],
+  imports: [LucideAngularModule, DatePipe, ProjectFormDialog],
   templateUrl: './projects.html',
   styleUrl: './projects.scss',
 })
 export class Projects implements OnInit {
   private projectService = inject(ProjectService);
+  showCreate = signal(false);
 
   icons = {
     Target,
@@ -119,6 +121,10 @@ export class Projects implements OnInit {
 
   onSearchInput(value: string): void {
     this.searchQuery.set(value);
+  }
+
+  onProjectCreated(project: Project): void {
+    this.projects.update((list) => [project, ...list]);
   }
 
   statusLabel(status: string): string {

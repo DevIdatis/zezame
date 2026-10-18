@@ -222,13 +222,12 @@ export class Timer implements OnInit, OnDestroy {
       )
       .subscribe((entry) => {
         this.clearInterval();
+        // Refresca el trabajo cerrado de hoy en cada transición (start/pausa/reanudar/stop)
+        this.loadToday();
 
         if (!entry) {
-          if (this.status() !== 'idle') {
-            this.status.set('idle');
-            this.elapsed.set(0);
-            this.loadToday();
-          }
+          this.status.set('idle');
+          this.elapsed.set(0);
           this.isTimerRunning.set(false);
           return;
         }
@@ -236,6 +235,7 @@ export class Timer implements OnInit, OnDestroy {
         if (entry.type === EntryType.Break) {
           this.status.set('paused');
           this.isTimerRunning.set(false);
+          this.elapsed.set(0);
           return;
         }
 
@@ -263,13 +263,7 @@ export class Timer implements OnInit, OnDestroy {
   }
 
   private loadToday(): void {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    this.time.list(today, tomorrow).subscribe({
+    this.time.listToday().subscribe({
       next: (list) => {
         this.entries.set(list);
         this.recalculateTodayWork(list);
@@ -306,19 +300,15 @@ export class Timer implements OnInit, OnDestroy {
   private recalculateTodayWork(list: TimeEntry[]): void {
     let totalSeconds = 0;
 
+    // Solo entradas de trabajo YA CERRADAS. La sesión en curso se suma aparte
+    // (workElapsed), así el contador acumula a través de las pausas sin reiniciarse.
     for (const entry of list) {
       if (entry.type !== 0) continue;
+      if (!entry.endTime) continue;
 
-      if (entry.endTime) {
-        const start = new Date(entry.startTime).getTime();
-        const end = new Date(entry.endTime).getTime();
-        const diffSeconds = Math.floor((end - start) / 1000);
-        totalSeconds += diffSeconds;
-      } else {
-        const start = new Date(entry.startTime).getTime();
-        const now = Date.now();
-        totalSeconds += Math.floor((now - start) / 1000);
-      }
+      const start = new Date(entry.startTime).getTime();
+      const end = new Date(entry.endTime).getTime();
+      totalSeconds += Math.floor((end - start) / 1000);
     }
 
     this.todayWorkSeconds.set(totalSeconds);

@@ -80,10 +80,10 @@ export class Dashboard {
 
   readonly navItems: NavItem[] = [
     { icon: this.icons.Clock, label: 'Timer', path: '/dashboard' },
-    { icon: this.icons.Target, label: 'Proyectos', path: '/dashboard/projects', badge: '4' },
+    { icon: this.icons.Target, label: 'Proyectos', path: '/dashboard/projects' },
     { icon: this.icons.Calendar, label: 'Calendario', path: '/dashboard/calendar' },
     { icon: this.icons.TrendingUp, label: 'Reportes', path: '/dashboard/reports' },
-    { icon: this.icons.Settings, label: 'Ajustes', path: '/dashboard/settings', badge: '1' },
+    { icon: this.icons.Settings, label: 'Ajustes', path: '/dashboard/settings' },
   ];
 
   isActive(path: string): boolean {

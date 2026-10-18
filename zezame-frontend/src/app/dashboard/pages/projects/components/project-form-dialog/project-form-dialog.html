@@ -1,0 +1,128 @@
+@if (open) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+    (click)="close()"
+  >
+    <div
+      class="relative w-full max-w-lg bg-card border border-border/50 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] scroll-area"
+      (click)="$event.stopPropagation()"
+    >
+      <div
+        class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r"
+        [class]="color()"
+      ></div>
+
+      <button
+        type="button"
+        class="absolute top-4 right-4 z-10 text-muted-foreground hover:text-foreground transition-colors"
+        (click)="close()"
+      >
+        <lucide-icon [img]="X" class="w-5 h-5"></lucide-icon>
+      </button>
+
+      <div class="p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <div
+            class="w-11 h-11 rounded-2xl bg-gradient-to-br from-coral to-yellow flex items-center justify-center shadow-lg shadow-coral/30"
+          >
+            <lucide-icon [img]="FolderPlus" class="w-5 h-5 text-white"></lucide-icon>
+          </div>
+          <div>
+            <h2 class="text-xl font-display font-semibold">Nuevo proyecto</h2>
+            <p class="text-sm text-muted-foreground">Crea un proyecto para organizar tu tiempo</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium">Nombre <span class="text-coral">*</span></label>
+            <input
+              type="text"
+              placeholder="Ej: Rediseño de la web"
+              [value]="name()"
+              (input)="name.set($any($event.target).value)"
+              class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50"
+            />
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium">Descripción</label>
+            <textarea
+              rows="2"
+              placeholder="Breve descripción (opcional)"
+              [value]="description()"
+              (input)="description.set($any($event.target).value)"
+              class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-coral/50"
+            ></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-sm font-medium">Emoji</label>
+              <div class="flex flex-wrap gap-1.5">
+                @for (e of emojiOptions; track e) {
+                  <button
+                    type="button"
+                    (click)="emoji.set(emoji() === e ? '' : e)"
+                    class="w-8 h-8 rounded-lg text-lg flex items-center justify-center border transition-all"
+                    [class]="
+                      emoji() === e ? 'border-coral bg-coral/10' : 'border-border hover:bg-muted'
+                    "
+                  >
+                    {{ e }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-sm font-medium">Fecha límite</label>
+              <input
+                type="date"
+                [value]="deadline()"
+                (input)="deadline.set($any($event.target).value)"
+                class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-sm font-medium">Color</label>
+            <div class="flex flex-wrap gap-2">
+              @for (c of colors; track c) {
+                <button
+                  type="button"
+                  (click)="color.set(c)"
+                  class="w-9 h-9 rounded-lg bg-gradient-to-br ring-2 ring-offset-2 ring-offset-card transition-transform hover:scale-105"
+                  [class]="c + ' ' + (color() === c ? 'ring-coral' : 'ring-transparent')"
+                  [attr.aria-label]="c"
+                ></button>
+              }
+            </div>
+          </div>
+
+          @if (error()) {
+            <p class="text-sm text-red-500">{{ error() }}</p>
+          }
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-border/50">
+          <button
+            type="button"
+            (click)="close()"
+            class="px-4 py-2 rounded-lg font-semibold bg-card text-foreground border-2 border-border hover:border-primary transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="submit()"
+            [disabled]="saving()"
+            class="px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-coral to-yellow hover:opacity-90 text-white shadow-lg shadow-coral/30 transition-all disabled:opacity-50"
+          >
+            {{ saving() ? 'Creando...' : 'Crear proyecto' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

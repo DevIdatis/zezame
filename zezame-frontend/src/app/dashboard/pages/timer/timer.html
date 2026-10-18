@@ -13,17 +13,26 @@
           <div
             class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-coral/10 text-coral text-sm font-medium mb-4"
           >
-            <div
-              class="w-2 h-2 rounded-full"
-              [class]="isTimerRunning() ? 'bg-lime animate-pulse' : 'bg-coral'"
-            ></div>
-            {{ isTimerRunning() ? 'En marcha' : 'Pausado' }}
+            @switch (status()) {
+              @case ('working') {
+                <div class="w-2 h-2 rounded-full bg-lime animate-pulse"></div>
+                En marcha
+              }
+              @case ('paused') {
+                <div class="w-2 h-2 rounded-full bg-yellow"></div>
+                Pausado
+              }
+              @default {
+                <div class="w-2 h-2 rounded-full bg-muted-foreground"></div>
+                Detenido
+              }
+            }
           </div>
 
           <div
             class="text-6xl lg:text-7xl font-display font-bold bg-gradient-to-r from-coral via-yellow to-cyan bg-clip-text text-transparent mb-4"
           >
-            {{ format(elapsed()) }}
+            {{ format(workElapsed()) }}
           </div>
           @if (currentProject(); as cp) {
             <div class="space-y-2">

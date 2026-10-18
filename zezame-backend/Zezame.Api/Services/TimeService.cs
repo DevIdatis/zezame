@@ -68,8 +68,34 @@ namespace Zezame.Api.Services {
             return ToVm(entry);
         }
 
+        // Crea una entrada de tiempo manual (con inicio y fin explícitos).
+        public async Task<EntryVm> CreateManualAsync(Guid userId, CreateManualEntryDto dto) {
+            var start = DateTime.SpecifyKind(dto.StartTime, DateTimeKind.Utc);
+            var end = DateTime.SpecifyKind(dto.EndTime, DateTimeKind.Utc);
+            if (end <= start)
+                throw new InvalidOperationException("La hora de fin debe ser posterior al inicio");
+
+            var now = DateTime.UtcNow;
+            var entry = new TimeEntry {
+                UserId = userId,
+                StartTime = start,
+                EndTime = end,
+                DurationMin = (int)(end - start).TotalMinutes,
+                Description = dto.Description,
+                Type = EntryType.Work,
+                ProjectId = dto.ProjectId,
+                ActivityId = dto.ActivityId,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            await _repo.AddAsync(entry);
+            return ToVm(entry);
+        }
         public async Task<EntryVm> StopAsync(Guid userId, StopEntryDto dto) {
-            var entry = await _repo.GetRunningAsync(userId);
+            // Cierra la entrada activa sea del tipo que sea (trabajo o pausa),
+            // para poder detener el cronómetro también estando en pausa.
+            var entry = await _repo.GetActiveByUserAsync(userId);
             if (entry == null || entry.Id != dto.Id)
                 throw new InvalidOperationException("No hay entrada activa");
 

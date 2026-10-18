@@ -20,7 +20,7 @@ export interface ProjectOption {
 }
 
 export interface AssignSelection {
-  projectId: string;
+  projectId: string | null;
   activityId: string | null;
   activityName: string;
 }
@@ -118,9 +118,6 @@ export class AssignActivityDialog implements OnChanges {
   }
 
   handleAssign(): void {
-    const project = this.selectedProject();
-    if (!project) return;
-
     const custom = this.customActivity().trim();
     let activityId: string | null = null;
     let activityName = custom;
@@ -132,7 +129,10 @@ export class AssignActivityDialog implements OnChanges {
       activityName = selected.name;
     }
 
-    this.assign.emit({ projectId: project.id, activityId, activityName });
+    if (!activityName) return;
+
+    // El proyecto es opcional: se puede asociar solo una actividad (texto libre)
+    this.assign.emit({ projectId: this.selectedProject()?.id ?? null, activityId, activityName });
     this.close();
   }
 

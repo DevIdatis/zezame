@@ -17,6 +17,7 @@
         Filtrar
       </button>
       <button
+        (click)="showEntry.set(true)"
         class="flex items-center gap-2 bg-gradient-to-r from-cyan to-lime hover:opacity-90 text-white shadow-lg px-4 py-2 rounded-xl font-semibold transition-opacity"
       >
         <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
@@ -154,7 +155,7 @@
 
           <div class="pt-4 border-t border-border/50">
             <h4 class="font-medium text-foreground mb-3">Entradas del día</h4>
-            <div class="space-y-3">
+            <div class="space-y-3 scroll-area max-h-72 pr-1">
               @if (!daySummary() || daySummary()!.entries.length === 0) {
                 <p class="text-sm text-muted-foreground text-center py-4">
                   No hay entradas este día.
@@ -224,3 +225,10 @@
     </div>
   </div>
 </div>
+
+<app-entry-form-dialog
+  [open]="showEntry()"
+  [date]="selectedDateStr()"
+  (openChange)="showEntry.set($event)"
+  (created)="onEntryCreated()"
+></app-entry-form-dialog>

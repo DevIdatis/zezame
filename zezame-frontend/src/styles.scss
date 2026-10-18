@@ -353,3 +353,34 @@
     animation-delay: 600ms;
   }
 }
+
+/* =========================================
+   Scroll estético unificado (toda la app)
+   ========================================= */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--coral) / 0.45) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--coral) / 0.35);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--coral) / 0.6);
+  background-clip: content-box;
+}
+
+/* Contenedor con scroll vertical y desvanecido superior/inferior sutil */
+.scroll-area {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

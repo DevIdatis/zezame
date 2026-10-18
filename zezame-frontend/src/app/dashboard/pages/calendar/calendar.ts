@@ -13,6 +13,7 @@ import {
 } from 'lucide-angular';
 import { ReportService } from '../../../core/report.service';
 import { CalendarDay, DaySummary } from '../../../core/models';
+import { EntryFormDialog } from './components/entry-form-dialog/entry-form-dialog';
 
 interface WeekdaySummary {
   day: string;
@@ -22,7 +23,7 @@ interface WeekdaySummary {
 
 @Component({
   selector: 'app-calendar',
-  imports: [LucideAngularModule, DecimalPipe],
+  imports: [LucideAngularModule, DecimalPipe, EntryFormDialog],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
 })
@@ -40,6 +41,13 @@ export class Calendar implements OnInit {
   days = signal<CalendarDay[]>([]);
   selectedDay = signal(this.now.getDate());
   daySummary = signal<DaySummary | null>(null);
+
+  showEntry = signal(false);
+
+  selectedDateStr = computed(
+    () =>
+      `${this.year()}-${String(this.month()).padStart(2, '0')}-${String(this.selectedDay()).padStart(2, '0')}`,
+  );
 
   // Etiqueta "Enero 2024"
   monthLabel = computed(() => {
@@ -114,6 +122,11 @@ export class Calendar implements OnInit {
   selectDay(day: number): void {
     this.selectedDay.set(day);
     this.loadDay(day);
+  }
+
+  onEntryCreated(): void {
+    this.loadMonth();
+    this.loadDay(this.selectedDay());
   }
 
   prevMonth(): void {

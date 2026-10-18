@@ -177,6 +177,33 @@ export class Reports implements OnInit {
     return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=ffdfbf`;
   }
 
+  exportCsv(): void {
+    const s = this.summary();
+    const rows: string[] = [];
+    rows.push(`Reporte Zezame,${this.monthLabel}`);
+    rows.push('');
+    rows.push('Métrica,Valor');
+    rows.push(`Horas totales,${s?.totalHours ?? 0}h`);
+    rows.push(`Promedio diario,${s?.avgDailyHours ?? 0}h`);
+    rows.push(`Productividad,${s?.productivity ?? 0}%`);
+    rows.push(`Tiempo focus,${s?.focusHours ?? 0}h`);
+    rows.push('');
+    rows.push('Semana,Horas,Objetivo');
+    this.weekly().forEach((w) => rows.push(`${w.week},${w.hours},${w.target}`));
+    rows.push('');
+    rows.push('Proyecto,Horas,Porcentaje');
+    this.byProject().forEach((p) => rows.push(`"${p.name}",${p.hours},${p.percentage}%`));
+
+    const csv = '﻿' + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `zezame-reporte-${this.year}-${String(this.month).padStart(2, '0')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   ngOnInit(): void {
     const month = `${this.year}-${String(this.month).padStart(2, '0')}`;
     this.reports.getSummary(month).subscribe({ next: (s) => this.summary.set(s), error: () => {} });

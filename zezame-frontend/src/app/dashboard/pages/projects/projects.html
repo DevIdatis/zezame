@@ -10,6 +10,7 @@
     </div>
 
     <button
+      (click)="showCreate.set(true)"
       class="flex items-center gap-2 bg-gradient-to-r from-coral to-yellow hover:opacity-90 text-white shadow-lg px-4 py-2 rounded-xl font-semibold transition-opacity"
     >
       <lucide-icon [img]="icons.Plus" class="w-4 h-4"></lucide-icon>
@@ -250,3 +251,9 @@
     </div>
   }
 </div>
+
+<app-project-form-dialog
+  [open]="showCreate()"
+  (openChange)="showCreate.set($event)"
+  (created)="onProjectCreated($event)"
+></app-project-form-dialog>

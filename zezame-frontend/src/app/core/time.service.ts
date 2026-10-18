@@ -44,6 +44,13 @@ export class TimeService {
   // API
   // ===============================
 
+  // Entradas de hoy usando el MISMO rango que invalidateTodayCache,
+  // para que la caché se invalide correctamente en cada transición.
+  listToday(): Observable<TimeEntry[]> {
+    const { from, to } = this.todayRange();
+    return this.list(from, to);
+  }
+
   list(from: Date, to: Date): Observable<TimeEntry[]> {
     const key = `${from.toISOString()}_${to.toISOString()}`;
 
@@ -57,6 +64,18 @@ export class TimeService {
     }
 
     return this.listCache.get(key)!;
+  }
+
+  // Crea una entrada manual (con inicio y fin explícitos) — usado en el calendario
+  createManual(body: {
+    startTime: string;
+    endTime: string;
+    description?: string | null;
+    projectId?: string | null;
+    activityId?: string | null;
+  }): Observable<TimeEntry> {
+    this.invalidateTodayCache();
+    return this.http.post<TimeEntry>(`${this.api}/timeEntries`, body);
   }
 
   start(description?: string, projectId?: string, activityId?: string): Observable<void> {
