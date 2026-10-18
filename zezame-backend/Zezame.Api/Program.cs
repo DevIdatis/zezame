@@ -101,6 +101,7 @@ builder.Services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
 // Contexto de tenant (organización de la petición), consumido por el query filter de EF.
 builder.Services.AddScoped<ITenantContext, TenantContext>();
@@ -118,6 +119,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<TimeService>();
 builder.Services.AddScoped<ReportService>();
+builder.Services.AddScoped<NotificationService>();
 
 builder.Services.AddHttpContextAccessor();
 

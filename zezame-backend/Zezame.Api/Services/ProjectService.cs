@@ -1,4 +1,4 @@
-using Zezame.Api.Exceptions;
+﻿using Zezame.Api.Exceptions;
 using Zezame.Api.Models.DTOs;
 using Zezame.Api.Services.Interfaces;
 using Zezame.Domain.Entities;
@@ -8,10 +8,12 @@ namespace Zezame.Api.Services {
     public class ProjectService(
         IProjectRepository projects,
         IUserRepository users,
-        Interfaces.IAuthorizationService auth) : IProjectService {
+        Interfaces.IAuthorizationService auth,
+        NotificationService notifications) : IProjectService {
         private readonly IProjectRepository _projects = projects;
         private readonly IUserRepository _users = users;
         private readonly Interfaces.IAuthorizationService _auth = auth;
+        private readonly NotificationService _notifications = notifications;
 
         public async Task<ProjectDto> CreateAsync(Guid coordinatorId, CreateProjectDto dto) {
             // Verificar que puede crear proyectos (Manager/Admin/Owner).
@@ -20,7 +22,7 @@ namespace Zezame.Api.Services {
             var owner = await _users.GetByIdAsync(coordinatorId)
                 ?? throw new NotFoundException("Usuario no encontrado");
             if (owner.OrganizationId is null)
-                throw new InvalidOperationException("El usuario no pertenece a ninguna organizaci�n");
+                throw new InvalidOperationException("El usuario no pertenece a ninguna organización");
 
             var project = new Project {
                 Name = dto.Name,
@@ -81,9 +83,9 @@ namespace Zezame.Api.Services {
             var user = await _users.GetByIdAsync(userId)
                 ?? throw new NotFoundException("Usuario no encontrado");
 
-            // El usuario debe pertenecer a la misma organizaci�n que el proyecto.
+            // El usuario debe pertenecer a la misma organización que el proyecto.
             if (user.OrganizationId != project.OrganizationId)
-                throw new ForbiddenException("El usuario no pertenece a esta organizaci�n");
+                throw new ForbiddenException("El usuario no pertenece a esta organización");
 
             if (await _projects.IsMemberAsync(projectId, userId))
                 throw new InvalidOperationException("Usuario ya es miembro");
@@ -92,6 +94,12 @@ namespace Zezame.Api.Services {
                 ProjectId = projectId,
                 UserId = userId
             });
+
+            await _notifications.NotifyAsync(
+                userId,
+                "Te han añadido a un proyecto 👥",
+                $"Ahora formas parte del proyecto «{project.Name}».",
+                NotificationType.Project);
         }
 
         private static ProjectDto MapToDto(Project p, string ownerName) {

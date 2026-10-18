@@ -9,14 +9,17 @@ namespace Zezame.Api.Services {
         private readonly IActivityRepository _activities;
         private readonly IProjectRepository _projects;
         private readonly IAuthorizationService _auth;
+        private readonly NotificationService _notifications;
 
         public ActivityService(
             IActivityRepository activities,
             IProjectRepository projects,
-            IAuthorizationService auth) {
+            IAuthorizationService auth,
+            NotificationService notifications) {
             _activities = activities;
             _projects = projects;
             _auth = auth;
+            _notifications = notifications;
         }
 
         public async Task<ActivityDto> CreateAsync(Guid coordinatorId, CreateActivityDto dto) {
@@ -38,6 +41,16 @@ namespace Zezame.Api.Services {
             };
 
             await _activities.AddAsync(activity);
+
+            // Avisar a la persona asignada (si no es quien la crea)
+            if (dto.AssignedToId.HasValue && dto.AssignedToId.Value != coordinatorId) {
+                await _notifications.NotifyAsync(
+                    dto.AssignedToId.Value,
+                    "Nueva actividad asignada 📌",
+                    $"Se te ha asignado la actividad «{activity.Name}».",
+                    NotificationType.Activity);
+            }
+
             return MapToDto(activity);
         }
 

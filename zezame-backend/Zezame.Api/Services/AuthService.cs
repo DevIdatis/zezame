@@ -18,7 +18,8 @@ namespace Zezame.Api.Services {
         IRefreshTokenRepository refreshTokens,
         IUserTokenRepository userTokens,
         IEmailSender email,
-        IConfiguration cfg) : ITokenIssuer {
+        IConfiguration cfg,
+        NotificationService notifications) : ITokenIssuer {
 
         private readonly IUserRepository _users = users;
         private readonly IRepository<Organization> _orgs = orgs;
@@ -26,6 +27,7 @@ namespace Zezame.Api.Services {
         private readonly IUserTokenRepository _userTokens = userTokens;
         private readonly IEmailSender _email = email;
         private readonly IConfiguration _cfg = cfg;
+        private readonly NotificationService _notifications = notifications;
 
         private static readonly TimeSpan VerificationTtl = TimeSpan.FromHours(48);
         private static readonly TimeSpan ResetTtl = TimeSpan.FromHours(2);
@@ -62,6 +64,12 @@ namespace Zezame.Api.Services {
 
             // Enviar email de verificación (verificación soft: no bloquea el login).
             await SendVerificationEmailAsync(user);
+
+            await _notifications.NotifyAsync(
+                user.Id,
+                "¡Bienvenid@ a Zezame! 🎉",
+                "Tu cuenta está lista. Empieza a fichar tu tiempo y crea tu primer proyecto.",
+                NotificationType.Welcome);
 
             return await IssueTokensAsync(user);
         }

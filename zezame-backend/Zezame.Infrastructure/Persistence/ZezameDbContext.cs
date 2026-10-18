@@ -17,6 +17,7 @@ namespace Zezame.Infrastructure.Persistence {
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<UserToken> UserTokens => Set<UserToken>();
         public DbSet<Invitation> Invitations => Set<Invitation>();
+        public DbSet<Notification> Notifications => Set<Notification>();
 
         public ZezameDbContext(DbContextOptions<ZezameDbContext> options, ITenantContext tenant)
             : base(options) {
@@ -59,6 +60,7 @@ namespace Zezame.Infrastructure.Persistence {
             // La aceptación de invitación ocurre sin autenticar (lookup por token): sin
             // filtro de tenant. El aislamiento por organización se aplica en el servicio.
             modelBuilder.Entity<Invitation>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<Notification>().HasQueryFilter(e => !e.IsDeleted);
 
             // Aislamiento multi-tenant (fail-closed): sin organización resuelta,
             // CurrentOrganizationId es null y estas consultas no devuelven nada.
@@ -221,6 +223,16 @@ namespace Zezame.Infrastructure.Persistence {
                 .HasIndex(i => i.TokenHash).IsUnique();
             modelBuilder.Entity<Invitation>()
                 .HasIndex(i => i.OrganizationId);
+
+            // Relación Notification - User
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany()
+                .HasForeignKey(n => n.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.UserId, n.IsRead });
         }
 
         public override int SaveChanges() {
