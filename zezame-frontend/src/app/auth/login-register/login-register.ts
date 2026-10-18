@@ -34,6 +34,7 @@ export class LoginRegister {
 
   form = this.fb.group({
     fullname: [''],
+    organizationName: [''],
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
@@ -67,6 +68,7 @@ export class LoginRegister {
   closeModal() {
     this.form.reset({
       fullname: '',
+      organizationName: '',
       email: '',
       password: '',
     });
@@ -81,16 +83,18 @@ export class LoginRegister {
 
   toggleMode() {
     this.isSignUp = !this.isSignUp;
-    const fullnameCtrl = this.form.get('fullname');
-
-    if (this.isSignUp) {
-      fullnameCtrl?.setValidators([Validators.required]);
-    } else {
-      fullnameCtrl?.clearValidators();
-      fullnameCtrl?.reset();
+    // En registro, nombre completo y nombre de organización son obligatorios.
+    const requiredInSignUp = ['fullname', 'organizationName'];
+    for (const name of requiredInSignUp) {
+      const ctrl = this.form.get(name);
+      if (this.isSignUp) {
+        ctrl?.setValidators([Validators.required]);
+      } else {
+        ctrl?.clearValidators();
+        ctrl?.reset();
+      }
+      ctrl?.updateValueAndValidity();
     }
-
-    fullnameCtrl?.updateValueAndValidity();
   }
   // private fb = inject(FormBuilder);
   // private auth = inject(AuthService);

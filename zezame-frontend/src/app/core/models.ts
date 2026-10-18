@@ -6,6 +6,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   fullName: string;
+  organizationName: string;
 }
 export interface TokenResponse {
   token: string;

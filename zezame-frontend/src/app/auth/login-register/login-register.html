@@ -73,6 +73,23 @@
               class="h-12 w-full rounded-xl border-2 border-border/50 bg-background/50 px-4 focus:border-coral"
             />
           </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium">Nombre de la organización</label>
+            @if (form.get('organizationName')?.invalid && form.get('organizationName')?.touched) {
+              <span
+                class="text-xs font-medium text-coral bg-coral/10 mx-2 px-2 py-0.5 rounded-full"
+              >
+                Requerido
+              </span>
+            }
+            <input
+              type="text"
+              formControlName="organizationName"
+              placeholder="Tu empresa o equipo 🏢"
+              class="h-12 w-full rounded-xl border-2 border-border/50 bg-background/50 px-4 focus:border-coral"
+            />
+          </div>
         }
 
         <!-- Email -->
