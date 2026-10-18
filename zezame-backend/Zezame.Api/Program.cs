@@ -15,6 +15,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:4200";
 
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException(
+        "Falta la configuración 'Jwt:Key'. Defínela en user-secrets o en una variable de entorno.");
+
 builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", p => p
     .WithOrigins(frontendUrl) // Origen espec�fico, no wildcard
     .AllowAnyMethod()
@@ -36,7 +40,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                Encoding.UTF8.GetBytes(jwtKey)),
             RoleClaimType = ClaimTypes.Role
         };
         // Configurar JWT para SignalR
@@ -86,6 +90,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// El middleware de excepciones va primero para envolver toda la tubería.
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
@@ -94,10 +99,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseCors("CorsPolicy");
-app.MapHub<TimeHub>("/timeHub");
 app.UseHttpsRedirection();
+app.UseCors("CorsPolicy");
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapHub<TimeHub>("/timeHub");
 app.MapControllers();
 
 app.Run();

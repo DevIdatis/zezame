@@ -32,6 +32,14 @@ namespace Zezame.Infrastructure.Persistence {
                 }
             }
 
+            //Filtro global de borrado lógico
+            modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<Project>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<ProjectMember>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<Activity>().HasQueryFilter(e => !e.IsDeleted);
+            modelBuilder.Entity<TimeEntry>().HasQueryFilter(e => !e.IsDeleted);
+
+
             // Índices únicos
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
