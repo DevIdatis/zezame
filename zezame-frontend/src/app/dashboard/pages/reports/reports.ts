@@ -15,6 +15,8 @@ import {
   BarChart3,
   PieChart,
   Activity,
+  ChevronLeft,
+  ChevronRight,
   Zap,
   LucideIconData,
 } from 'lucide-angular';
@@ -76,18 +78,20 @@ export class Reports implements OnInit {
     BarChart3,
     PieChart,
     Activity,
+    ChevronLeft,
+    ChevronRight,
     Zap,
   };
 
   private now = new Date();
-  year = this.now.getFullYear();
-  month = this.now.getMonth() + 1;
+  year = signal(this.now.getFullYear());
+  month = signal(this.now.getMonth() + 1); // 1-12
 
-  monthLabel = (() => {
-    const d = new Date(this.year, this.month - 1, 1);
+  monthLabel = computed(() => {
+    const d = new Date(this.year(), this.month() - 1, 1);
     const l = d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
     return l.charAt(0).toUpperCase() + l.slice(1);
-  })();
+  });
 
   summary = signal<ReportSummary | null>(null);
   byProject = signal<ProjectBreakdown[]>([]);
@@ -180,7 +184,7 @@ export class Reports implements OnInit {
   exportCsv(): void {
     const s = this.summary();
     const rows: string[] = [];
-    rows.push(`Reporte Zezame,${this.monthLabel}`);
+    rows.push(`Reporte Zezame,${this.monthLabel()}`);
     rows.push('');
     rows.push('Métrica,Valor');
     rows.push(`Horas totales,${s?.totalHours ?? 0}h`);
@@ -199,13 +203,17 @@ export class Reports implements OnInit {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `zezame-reporte-${this.year}-${String(this.month).padStart(2, '0')}.csv`;
+    a.download = `zezame-reporte-${this.year()}-${String(this.month()).padStart(2, '0')}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
 
   ngOnInit(): void {
-    const month = `${this.year}-${String(this.month).padStart(2, '0')}`;
+    this.load();
+  }
+
+  private load(): void {
+    const month = `${this.year()}-${String(this.month()).padStart(2, '0')}`;
     this.reports.getSummary(month).subscribe({ next: (s) => this.summary.set(s), error: () => {} });
     this.reports
       .getByProject(month)
@@ -213,5 +221,25 @@ export class Reports implements OnInit {
     this.reports.getWeekly(month).subscribe({ next: (w) => this.weekly.set(w), error: () => {} });
     this.reports.getTeam(month).subscribe({ next: (t) => this.team.set(t), error: () => {} });
     this.reports.getCalendar(month).subscribe({ next: (d) => this.daily.set(d), error: () => {} });
+  }
+
+  prevMonth(): void {
+    if (this.month() === 1) {
+      this.month.set(12);
+      this.year.update((y) => y - 1);
+    } else {
+      this.month.update((m) => m - 1);
+    }
+    this.load();
+  }
+
+  nextMonth(): void {
+    if (this.month() === 12) {
+      this.month.set(1);
+      this.year.update((y) => y + 1);
+    } else {
+      this.month.update((m) => m + 1);
+    }
+    this.load();
   }
 }

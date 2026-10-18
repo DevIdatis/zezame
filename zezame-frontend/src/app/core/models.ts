@@ -189,3 +189,13 @@ export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
 }
+
+// Se llama AppNotification para no chocar con el tipo global 'Notification' del navegador.
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string; // 'Info' | 'Welcome' | 'Activity' | 'Project'
+  isRead: boolean;
+  createdAt: string;
+}

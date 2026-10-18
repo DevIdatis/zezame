@@ -10,13 +10,28 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <button
-        class="flex items-center gap-2 border border-border/50 bg-card px-4 py-2 rounded-xl font-medium hover:bg-muted transition-colors"
+      <div
+        class="flex items-center gap-1 border border-border/50 bg-card rounded-xl px-1 py-1 font-medium"
       >
-        <lucide-icon [img]="icons.Calendar" class="w-4 h-4"></lucide-icon>
-        {{ monthLabel }}
-        <lucide-icon [img]="icons.ChevronDown" class="w-4 h-4"></lucide-icon>
-      </button>
+        <button
+          (click)="prevMonth()"
+          class="p-1.5 rounded-lg hover:bg-muted transition-colors"
+          aria-label="Mes anterior"
+        >
+          <lucide-icon [img]="icons.ChevronLeft" class="w-4 h-4"></lucide-icon>
+        </button>
+        <span class="flex items-center gap-2 px-2 min-w-[9.5rem] justify-center text-sm">
+          <lucide-icon [img]="icons.Calendar" class="w-4 h-4 text-cyan"></lucide-icon>
+          {{ monthLabel() }}
+        </span>
+        <button
+          (click)="nextMonth()"
+          class="p-1.5 rounded-lg hover:bg-muted transition-colors"
+          aria-label="Mes siguiente"
+        >
+          <lucide-icon [img]="icons.ChevronRight" class="w-4 h-4"></lucide-icon>
+        </button>
+      </div>
       <button
         (click)="exportCsv()"
         class="flex items-center gap-2 bg-gradient-to-r from-yellow to-lime hover:opacity-90 text-foreground shadow-lg px-4 py-2 rounded-xl font-semibold transition-opacity"

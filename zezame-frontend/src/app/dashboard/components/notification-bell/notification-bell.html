@@ -1,0 +1,80 @@
+<div class="relative">
+  <!-- Botón campana -->
+  <button
+    (click)="toggle()"
+    class="relative p-2 hover:bg-muted rounded-lg transition-colors text-foreground"
+    aria-label="Notificaciones"
+  >
+    <lucide-icon [img]="Bell" class="w-5 h-5"></lucide-icon>
+    @if (unread() > 0) {
+      <span
+        class="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-coral text-white text-[10px] font-semibold rounded-full flex items-center justify-center"
+      >
+        {{ unreadLabel() }}
+      </span>
+    }
+  </button>
+
+  @if (open()) {
+    <!-- Cierre al hacer clic fuera -->
+    <div class="fixed inset-0 z-40" (click)="close()"></div>
+
+    <!-- Panel -->
+    <div
+      class="absolute right-0 mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] z-50 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
+    >
+      <div class="flex items-center justify-between px-4 py-3 border-b border-border">
+        <h3 class="font-display font-semibold text-foreground">Notificaciones</h3>
+        @if (unread() > 0) {
+          <button
+            (click)="markAll()"
+            class="flex items-center gap-1 text-xs font-medium text-coral hover:underline"
+          >
+            <lucide-icon [img]="CheckCheck" class="w-3.5 h-3.5"></lucide-icon>
+            Marcar todas
+          </button>
+        }
+      </div>
+
+      <div class="max-h-96 scroll-area">
+        @if (notifications().length === 0) {
+          <div class="px-4 py-10 text-center text-sm text-muted-foreground">
+            <lucide-icon [img]="Bell" class="w-8 h-8 mx-auto mb-2 opacity-40"></lucide-icon>
+            No tienes notificaciones.
+          </div>
+        } @else {
+          @for (n of notifications(); track n.id) {
+            <button
+              (click)="onClick(n)"
+              class="w-full text-left flex items-start gap-3 px-4 py-3 border-b border-border/50 transition-colors group"
+              [class]="!n.isRead ? 'bg-coral/5 hover:bg-coral/10' : 'hover:bg-muted/50'"
+            >
+              <div
+                class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-coral/10"
+              >
+                <lucide-icon [img]="iconFor(n.type)" class="w-4 h-4 text-coral"></lucide-icon>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <p class="text-sm font-medium text-foreground truncate">{{ n.title }}</p>
+                  @if (!n.isRead) {
+                    <span class="w-2 h-2 rounded-full bg-coral shrink-0"></span>
+                  }
+                </div>
+                <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{{ n.message }}</p>
+                <p class="text-[11px] text-muted-foreground mt-1">{{ timeAgo(n.createdAt) }}</p>
+              </div>
+              <span
+                (click)="remove(n, $event)"
+                class="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                aria-label="Eliminar notificación"
+              >
+                <lucide-icon [img]="Trash2" class="w-4 h-4"></lucide-icon>
+              </span>
+            </button>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

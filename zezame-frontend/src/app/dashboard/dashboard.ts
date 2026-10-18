@@ -21,6 +21,7 @@ import {
 import { AuthService } from '../core/services/auth.service';
 import { User } from '../core/models';
 import { AuthorizationService } from 'services/authorization.service';
+import { NotificationBell } from './components/notification-bell/notification-bell';
 
 interface NavItem {
   icon: LucideIconData;
@@ -41,7 +42,7 @@ interface UserCard {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterOutlet, LucideAngularModule],
+  imports: [RouterOutlet, LucideAngularModule, NotificationBell],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

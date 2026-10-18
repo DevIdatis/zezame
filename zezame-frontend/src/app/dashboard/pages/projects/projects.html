@@ -75,14 +75,22 @@
         <button
           (click)="setViewMode('grid')"
           class="h-8 w-8 flex items-center justify-center rounded-md transition-colors"
-          [class]="viewMode() === 'grid' ? 'bg-card shadow-sm' : 'hover:bg-muted-foreground/10'"
+          [class]="
+            viewMode() === 'grid'
+              ? 'bg-card shadow-sm text-coral'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10'
+          "
         >
           <lucide-icon [img]="icons.Grid3X3" class="w-4 h-4"></lucide-icon>
         </button>
         <button
           (click)="setViewMode('list')"
           class="h-8 w-8 flex items-center justify-center rounded-md transition-colors"
-          [class]="viewMode() === 'list' ? 'bg-card shadow-sm' : 'hover:bg-muted-foreground/10'"
+          [class]="
+            viewMode() === 'list'
+              ? 'bg-card shadow-sm text-coral'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10'
+          "
         >
           <lucide-icon [img]="icons.List" class="w-4 h-4"></lucide-icon>
         </button>
