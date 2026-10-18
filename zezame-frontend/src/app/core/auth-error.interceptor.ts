@@ -1,13 +1,13 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { catchError, throwError } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
 /**
- * Cierra la sesión y redirige cuando la API responde 401 (token ausente,
- * inválido o caducado). Solo actúa en el navegador: en SSR no hay sesión
- * que cerrar y localStorage no está disponible.
+ * Ante un 401 intenta renovar el access token (una sola vez, compartido) y
+ * reintenta la petición original. Si la renovación falla, cierra sesión.
+ * No actúa sobre los propios endpoints /auth/ ni en SSR.
  */
 export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
@@ -15,9 +15,21 @@ export const authErrorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
-      if (err.status === 401 && isBrowser) {
-        auth.logout();
+      const isAuthCall = req.url.includes('/auth/');
+
+      if (err.status === 401 && isBrowser && !isAuthCall) {
+        return auth.refreshAccessToken().pipe(
+          switchMap((token) => {
+            if (!token) {
+              auth.forceLogout();
+              return throwError(() => err);
+            }
+            const retried = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+            return next(retried);
+          }),
+        );
       }
+
       return throwError(() => err);
     }),
   );

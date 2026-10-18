@@ -1,6 +1,6 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, combineLatest, filter, map, Observable, take, tap } from 'rxjs';
+import { BehaviorSubject, catchError, finalize, map, Observable, of, shareReplay, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { LoginRequest, RegisterRequest, TokenResponse, User } from './models';
@@ -18,15 +18,17 @@ export class AuthService {
   public currentUser$ = this.user$.asObservable();
   private initialized$ = new BehaviorSubject<boolean>(false);
 
-  // En AuthService, modifica:
   public isLoggedIn$ = this.user$.pipe(map((user) => !!user));
+
+  private loading$ = new BehaviorSubject<boolean>(false);
+  public isLoading$ = this.loading$.asObservable();
+
+  // Llamada de refresco en curso, compartida entre peticiones concurrentes.
+  private refreshInFlight: Observable<string | null> | null = null;
 
   constructor() {
     this.autoLogin();
   }
-
-  private loading$ = new BehaviorSubject<boolean>(false);
-  public isLoading$ = this.loading$.asObservable();
 
   login(body: LoginRequest): Observable<TokenResponse> {
     this.loading$.next(true);
@@ -44,26 +46,77 @@ export class AuthService {
     );
   }
 
+  /** Cierre iniciado por el usuario: revoca el refresh token en el backend. */
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('expires');
-    this.user$.next(null);
+    const rt = this.getRefreshToken();
+    if (this.isBrowser && rt) {
+      this.http.post(`${this.api}/auth/logout`, { refreshToken: rt }).subscribe({
+        next: () => {},
+        error: () => {},
+      });
+    }
+    this.forceLogout();
+  }
+
+  /** Cierre local (sesión caducada o refresco fallido): limpia y redirige sin llamar al backend. */
+  forceLogout(): void {
+    this.clearSession();
     this.router.navigate(['/main']);
   }
 
-  private handleAuth(res: TokenResponse): void {
-    // Guardamos JWT
-    localStorage.setItem('token', res.token);
-    localStorage.setItem('expires', res.expires);
+  private clearSession(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('expires');
+      localStorage.removeItem('refreshToken');
+    }
+    this.user$.next(null);
+  }
 
-    // Decodificamos payload del JWT para sacar info del usuario
-    const payload = JSON.parse(atob(res.token.split('.')[1])) as any;
-    const user: User = {
-      id: payload.sub || payload.nameidentifier, // por seguridad soporta sub o nameidentifier
-      email: payload.email,
-      fullName: payload.name,
-    };
-    this.user$.next(user);
+  /**
+   * Renueva el access token con el refresh token. Comparte una única llamada en
+   * curso entre peticiones concurrentes para no refrescar en paralelo.
+   * Devuelve el nuevo access token, o null si no se pudo renovar.
+   */
+  refreshAccessToken(): Observable<string | null> {
+    if (this.refreshInFlight) return this.refreshInFlight;
+
+    const rt = this.getRefreshToken();
+    if (!this.isBrowser || !rt) return of(null);
+
+    this.refreshInFlight = this.http
+      .post<TokenResponse>(`${this.api}/auth/refresh`, { refreshToken: rt })
+      .pipe(
+        tap((res) => this.handleAuth(res)),
+        map((res) => res.token as string | null),
+        catchError(() => of(null)),
+        finalize(() => (this.refreshInFlight = null)),
+        shareReplay(1),
+      );
+
+    return this.refreshInFlight;
+  }
+
+  private handleAuth(res: TokenResponse): void {
+    if (this.isBrowser) {
+      localStorage.setItem('token', res.token);
+      localStorage.setItem('expires', res.expires);
+      if (res.refreshToken) localStorage.setItem('refreshToken', res.refreshToken);
+    }
+    this.setUserFromToken(res.token);
+  }
+
+  private setUserFromToken(token: string): void {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])) as any;
+      this.user$.next({
+        id: payload.sub || payload.nameidentifier,
+        email: payload.email,
+        fullName: payload.name,
+      });
+    } catch {
+      this.user$.next(null);
+    }
   }
 
   autoLogin(): void {
@@ -74,14 +127,17 @@ export class AuthService {
       return;
     }
 
-    // Solo en el cliente (browser)
     const token = localStorage.getItem('token');
     const exp = localStorage.getItem('expires');
 
-    if (!token || !exp || new Date() >= new Date(exp)) {
+    if (!token) {
       this.user$.next(null);
+    } else if (!exp || new Date() >= new Date(exp)) {
+      // Access token caducado: mantenemos la sesión en memoria; la primera
+      // petición protegida disparará el refresco (interceptor 401).
+      this.setUserFromToken(token);
     } else {
-      this.handleAuth({ token, expires: exp });
+      this.setUserFromToken(token);
     }
 
     this.initialized$.next(true);
@@ -89,6 +145,10 @@ export class AuthService {
 
   getToken(): string | null {
     return this.isBrowser ? localStorage.getItem('token') : null;
+  }
+
+  getRefreshToken(): string | null {
+    return this.isBrowser ? localStorage.getItem('refreshToken') : null;
   }
 
   // Actualiza en memoria el usuario actual (p. ej. tras editar el perfil)

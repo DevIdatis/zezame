@@ -11,6 +11,7 @@ export interface RegisterRequest {
 export interface TokenResponse {
   token: string;
   expires: string;
+  refreshToken?: string;
 }
 export interface User {
   id: string;
