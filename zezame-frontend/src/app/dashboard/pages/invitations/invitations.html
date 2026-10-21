@@ -65,7 +65,7 @@
             <th class="text-right p-3">Acciones</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="bg-card">
           @for (inv of invitations(); track inv.id) {
             <tr class="border-t border-border/50">
               <td class="p-3">{{ inv.email }}</td>
