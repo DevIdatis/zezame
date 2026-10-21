@@ -1,4 +1,5 @@
-﻿using static Zezame.Domain.Entities.User;
+﻿using Zezame.Domain.Entities;
+using static Zezame.Domain.Entities.User;
 
 namespace Zezame.Api.Models {
     public class AuthDtos {
@@ -19,5 +20,6 @@ namespace Zezame.Api.Models {
         public record ResendVerificationRequest(string Email);
         public record ForgotPasswordRequest(string Email);
         public record ResetPasswordRequest(string Token, string NewPassword);
+        public record UserOrgDto(Guid Id, string Email, string FullName, OrganizationRole Role);
     }
 }

@@ -5,19 +5,14 @@ import { AuthService } from './auth.service';
 import { OrganizationRole } from '../enum/organization-role.enum';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthorizationService {
   private readonly authService = inject(AuthService);
 
-  private readonly currentUser = toSignal(
-    this.authService.currentUser$,
-    { initialValue: null }
-  );
+  private readonly currentUser = toSignal(this.authService.currentUser$, { initialValue: null });
 
-  private readonly currentRole = computed(
-    () => this.currentUser()?.role ?? null
-  );
+  private readonly currentRole = computed(() => this.currentUser()?.role ?? null);
 
   getRole(): OrganizationRole | null {
     return this.currentRole();

@@ -1,5 +1,6 @@
 using Zezame.Api.Models.DTOs;
 using Zezame.Domain.Entities;
+using static Zezame.Api.Models.AuthDtos;
 
 namespace Zezame.Api.Services.Interfaces {
     public interface IProjectService {
@@ -9,5 +10,8 @@ namespace Zezame.Api.Services.Interfaces {
         Task<ProjectDto> UpdateAsync(Guid projectId, Guid userId, UpdateProjectDto dto);
         Task DeleteAsync(Guid projectId, Guid userId);
         Task AddMemberAsync(Guid projectId, Guid coordinatorId, Guid userId);
+        Task<IEnumerable<UserOrgDto>> GetMembersSameOrganization(Guid userId);
+        Task RemoveMemberAsync(Guid projectId, Guid coordinatorId, Guid userId);
+        Task<IEnumerable<UserOrgDto>> GetProjectMembersAsync(Guid projectId, Guid userId);
     }
 }

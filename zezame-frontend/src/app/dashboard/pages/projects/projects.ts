@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import {
   LucideAngularModule,
@@ -14,18 +14,22 @@ import {
   Calendar,
   CheckCircle2,
   ArrowUpRight,
+  Trash2,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-angular';
 import { ProjectService } from 'services/project.service';
 import { Project } from '../../../core/models';
 import { ProjectFormDialog } from './components/project-form-dialog/project-form-dialog';
 import { AuthorizationService } from 'services/authorization.service';
+import { ProjectManageDialog } from './components/project-manage-dialog/project-manage-dialog';
 
 type ViewMode = 'grid' | 'list';
 type FilterKey = 'all' | 'active' | 'paused' | 'completed';
 
 @Component({
   selector: 'app-projects',
-  imports: [LucideAngularModule, DatePipe, ProjectFormDialog],
+  imports: [LucideAngularModule, DatePipe, ProjectFormDialog, ProjectManageDialog],
   templateUrl: './projects.html',
   styleUrl: './projects.scss',
 })
@@ -47,6 +51,9 @@ export class Projects implements OnInit {
     Calendar,
     CheckCircle2,
     ArrowUpRight,
+    Trash2,
+    AlertTriangle,
+    Loader2,
   };
 
   viewMode = signal<ViewMode>('grid');
@@ -54,6 +61,18 @@ export class Projects implements OnInit {
   searchQuery = signal('');
   projects = signal<Project[]>([]);
   loading = signal(false);
+
+  // Menú contextual
+  openMenuId = signal<string | null>(null);
+
+  // Confirmación de borrado
+  showDeleteDialog = signal(false);
+  projectToDelete = signal<Project | null>(null);
+  deleting = signal(false);
+
+  // Signals para controlar el modal
+  showManageDialog = signal(false);
+  selectedProject = signal<Project | null>(null);
 
   readonly filters: { key: FilterKey; label: string }[] = [
     { key: 'all', label: 'Todos' },
@@ -140,5 +159,72 @@ export class Projects implements OnInit {
       default:
         return status;
     }
+  }
+
+  // Abrir modal con el proyecto seleccionado
+  openManageDialog(project: Project): void {
+    this.selectedProject.set(project);
+    this.showManageDialog.set(true);
+  }
+
+  // Cerrar modal
+  closeManageDialog(): void {
+    this.showManageDialog.set(false);
+    // Opcional: limpiar después de la animación de cierre
+    // setTimeout(() => this.selectedProject.set(null), 300);
+  }
+
+  // Handler cuando se actualiza el proyecto desde el modal
+  onProjectUpdated(updated: Project): void {
+    this.load();
+  }
+
+  // Abrir/cerrar menú de los 3 puntos
+  toggleMenu(projectId: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.openMenuId.update((current) => (current === projectId ? null : projectId));
+  }
+
+  // Click en "Eliminar" dentro del menú
+  askDelete(project: Project): void {
+    this.projectToDelete.set(project);
+    this.showDeleteDialog.set(true);
+    this.openMenuId.set(null);
+  }
+
+  // Confirmar borrado
+  confirmDelete(): void {
+    const project = this.projectToDelete();
+    if (!project) return;
+
+    this.deleting.set(true);
+    this.projectService.delete(project.id).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.showDeleteDialog.set(false);
+        this.projectToDelete.set(null);
+        this.reloadProjects(); // o actualizar el array local
+      },
+      error: (err) => {
+        console.error('Error eliminando proyecto:', err);
+        this.deleting.set(false);
+      },
+    });
+  }
+
+  cancelDelete(): void {
+    this.showDeleteDialog.set(false);
+    this.projectToDelete.set(null);
+  }
+
+  // Recarga la lista (ajusta al nombre real de tu método de carga)
+  private reloadProjects(): void {
+    this.load();
+  }
+
+  // Cerrar menú al hacer click fuera
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.openMenuId.set(null);
   }
 }

@@ -78,5 +78,10 @@
   </div>
 </nav>
 
-<app-login-register [isOpen]="showLogin" [isSignUp]="signUp" (close)="showLogin = false" (login)="handleLogin()">
+<app-login-register
+  [isOpen]="showLogin"
+  [isSignUp]="signUp"
+  (close)="showLogin = false"
+  (login)="handleLogin()"
+>
 </app-login-register>

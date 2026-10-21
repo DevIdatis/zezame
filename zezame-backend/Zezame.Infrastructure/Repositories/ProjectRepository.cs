@@ -21,6 +21,7 @@ namespace Zezame.Infrastructure.Repositories {
 
         public async Task<Project?> GetByIdWithMembersAsync(Guid id)
             => await _dbSet
+                .Include(p => p.Owner)
                 .Include(p => p.Members)
                 .ThenInclude(m => m.User)
                 .Include(p => p.Activities)
@@ -52,6 +53,16 @@ namespace Zezame.Infrastructure.Repositories {
         public async Task AddMemberAsync(ProjectMember member) {
             await _context.ProjectMembers.AddAsync(member);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task RemoveMemberAsync(Guid projectId, Guid userId) {
+            var member = await _context.ProjectMembers
+                .FirstOrDefaultAsync(pm => pm.ProjectId == projectId && pm.UserId == userId);
+
+            if (member != null) {
+                _context.ProjectMembers.Remove(member);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<IEnumerable<Guid>> GetTeammateUserIdsAsync(Guid userId) {

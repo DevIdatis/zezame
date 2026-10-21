@@ -18,6 +18,15 @@ namespace Zezame.Infrastructure.Repositories {
                 .ThenInclude(pm => pm.Project)
                 .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
 
+        public async Task<IEnumerable<User>> GetAllByOrganization(Guid orgId)
+            => await _dbSet
+                .AsNoTracking()
+                .Include(x => x.Organization)
+                .Include(u => u.OwnedProjects)
+                .Include(u => u.ProjectMemberships)
+                    .ThenInclude(pm => pm.Project)
+                .Where(x => x.OrganizationId == orgId && !x.IsDeleted).ToListAsync();
+
         public async Task<IEnumerable<User>> GetByRoleAsync(OrganizationRole role)
             => await _dbSet.Where(u => u.Role == role && !u.IsDeleted).ToListAsync();
     }

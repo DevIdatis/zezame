@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Zezame.Api.Models.DTOs;
 using Zezame.Api.Services.Interfaces;
 using Zezame.Domain.Entities;
+using static Zezame.Api.Models.AuthDtos;
 
 namespace Zezame.Api.Controllers {
     [ApiController]
@@ -65,6 +66,29 @@ namespace Zezame.Api.Controllers {
             var currentUserId = GetCurrentUserId();
             await _projectService.AddMemberAsync(projectId, currentUserId, userId);
             return NoContent();
+        }
+
+        [HttpGet("GetMembersOrganization")]
+        [Authorize(Policy = "RequireManager")]
+        public async Task<ActionResult<IEnumerable<UserOrgDto>>> GetMembersOrganization() {
+            var currentUserId = GetCurrentUserId();
+            var users = await _projectService.GetMembersSameOrganization(currentUserId);
+            return Ok(users);
+        }
+
+        [HttpDelete("{projectId}/members/{userId}")]
+        [Authorize(Policy = "RequireManager")]
+        public async Task<IActionResult> RemoveMember(Guid projectId, Guid userId) {
+            var currentUserId = GetCurrentUserId();
+            await _projectService.RemoveMemberAsync(projectId, currentUserId, userId);
+            return NoContent();
+        }
+
+        [HttpGet("{projectId}/members")]
+        public async Task<ActionResult<IEnumerable<UserOrgDto>>> GetMembers(Guid projectId) {
+            var currentUserId = GetCurrentUserId();
+            var members = await _projectService.GetProjectMembersAsync(projectId, currentUserId);
+            return Ok(members);
         }
 
         private Guid GetCurrentUserId() {

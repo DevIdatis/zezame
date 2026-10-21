@@ -116,7 +116,7 @@ export class AuthService {
         fullName: payload.name,
         organizationId: payload.org_id,
         organizationName: payload.org_name,
-        role: Number(payload.role) as OrganizationRole
+        role: Number(payload.role) as OrganizationRole,
       });
     } catch {
       this.user$.next(null);

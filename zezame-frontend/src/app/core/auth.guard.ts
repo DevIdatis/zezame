@@ -13,11 +13,11 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   // En SSR permitimos la navegación; la validación real la hace el cliente.
   if (!isBrowser) {
-    return true; 
+    return true;
   }
 
   return auth.isLoggedIn$.pipe(
-    filter((isLoggedIn) => isLoggedIn !== undefined), 
+    filter((isLoggedIn) => isLoggedIn !== undefined),
     first(),
     map((isLoggedIn) => (isLoggedIn ? true : router.createUrlTree(['/main']))),
   );

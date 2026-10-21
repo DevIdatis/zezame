@@ -81,9 +81,7 @@ export class Settings implements OnInit {
   };
 
   activeTab = signal<TabId>('profile');
-  readonly isOwner = computed(() =>
-    this.authorization.isOwner()
-  );
+  readonly isOwner = computed(() => this.authorization.isOwner());
   readonly tabs: Tab[] = [
     { id: 'profile', label: 'Perfil', icon: User, canSee: true },
     { id: 'notifications', label: 'Notificaciones', icon: Bell, canSee: true },

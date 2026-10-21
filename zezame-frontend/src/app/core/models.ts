@@ -1,4 +1,4 @@
-import { OrganizationRole } from "./enum/organization-role.enum";
+import { OrganizationRole } from './enum/organization-role.enum';
 
 export interface LoginRequest {
   email: string;
@@ -22,6 +22,16 @@ export interface User {
   organizationId?: string;
   organizationName?: string;
   role: OrganizationRole;
+}
+
+export interface UserOrgDto {
+  id: string;
+  email: string;
+  fullName: string;
+  organizationId?: string;
+  organizationName?: string;
+  role: OrganizationRole;
+  avatar?: string;
 }
 
 export interface Invitation {

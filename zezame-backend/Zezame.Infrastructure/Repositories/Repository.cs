@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using Zezame.Domain.Base;
 using Zezame.Domain.Interfaces;
 using Zezame.Infrastructure.Persistence;
@@ -11,8 +12,14 @@ namespace Zezame.Infrastructure.Repositories {
         public virtual async Task<T?> GetByIdAsync(Guid id)
             => await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync()
-            => await _dbSet.Where(e => !e.IsDeleted).ToListAsync();
+        public virtual async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null) {
+            IQueryable<T> query = _dbSet.Where(e => !e.IsDeleted);
+
+            if (filter != null)
+                query = query.Where(filter);
+
+            return await query.ToListAsync();
+        }
 
         public virtual async Task<T> AddAsync(T entity) {
             await _dbSet.AddAsync(entity);

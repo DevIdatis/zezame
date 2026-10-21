@@ -52,7 +52,21 @@ export class Dashboard {
   private readonly authorization = inject(AuthorizationService);
 
   // Icons mapping for lucide-angular
-  icons = { Clock, Target, Calendar, TrendingUp, Settings, LogOut, Bell, Search, Flame, Menu, X, UserPlus, Building };
+  icons = {
+    Clock,
+    Target,
+    Calendar,
+    TrendingUp,
+    Settings,
+    LogOut,
+    Bell,
+    Search,
+    Flame,
+    Menu,
+    X,
+    UserPlus,
+    Building,
+  };
 
   // State
   mobileMenuOpen = signal(false);
@@ -60,9 +74,7 @@ export class Dashboard {
   // Usuario autenticado (fuente real)
   private currentUser = signal<User | null>(null);
 
-  readonly isOwner = computed(() =>
-    this.authorization.isOwner()
-  );
+  readonly isOwner = computed(() => this.authorization.isOwner());
 
   constructor() {
     this.auth.currentUser$.pipe(takeUntilDestroyed()).subscribe((u) => this.currentUser.set(u));
@@ -96,7 +108,12 @@ export class Dashboard {
     { icon: this.icons.Target, label: 'Proyectos', path: '/dashboard/projects', canSee: true },
     { icon: this.icons.Calendar, label: 'Calendario', path: '/dashboard/calendar', canSee: true },
     { icon: this.icons.TrendingUp, label: 'Reportes', path: '/dashboard/reports', canSee: true },
-    { icon: this.icons.UserPlus, label: 'Invitaciones', path: '/dashboard/invitations', canSee: this.isOwner() },
+    {
+      icon: this.icons.UserPlus,
+      label: 'Invitaciones',
+      path: '/dashboard/invitations',
+      canSee: this.isOwner(),
+    },
     { icon: this.icons.Settings, label: 'Ajustes', path: '/dashboard/settings', canSee: true },
   ];
 

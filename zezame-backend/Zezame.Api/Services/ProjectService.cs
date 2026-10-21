@@ -3,6 +3,7 @@ using Zezame.Api.Models.DTOs;
 using Zezame.Api.Services.Interfaces;
 using Zezame.Domain.Entities;
 using Zezame.Domain.Interfaces;
+using static Zezame.Api.Models.AuthDtos;
 
 namespace Zezame.Api.Services {
     public class ProjectService(
@@ -102,6 +103,43 @@ namespace Zezame.Api.Services {
                 NotificationType.Project);
         }
 
+        public async Task<IEnumerable<UserOrgDto>> GetMembersSameOrganization(Guid userId) {
+            var owner = await _users.GetByIdAsync(userId)
+                ?? throw new UnauthorizedException();
+
+            var usersSameOrg = await _users.GetAllByOrganization(owner.OrganizationId!.Value);
+            //var usersSameOrg = await _users.GetAllAsync(x => x.Role == OrganizationRole.Employee && x.OrganizationId == owner.OrganizationId);
+            return usersSameOrg.Select(x => MapToDtoUser(x));
+
+        }
+
+        public async Task<IEnumerable<UserOrgDto>> GetProjectMembersAsync(Guid projectId, Guid userId) {
+            await _auth.EnsureCanAccessProjectAsync(userId, projectId);
+            var project = await _projects.GetByIdWithMembersAsync(projectId)
+                ?? throw new NotFoundException("Proyecto no encontrado");
+
+            // Si GetByIdWithMembersAsync no incluye User en Members, hay que ajustar el repo.
+            return project.Members?
+                .Select(m => MapToDtoUser(m.User!))
+                .Where(u => u != null)
+                .ToList() ?? new List<UserOrgDto>();
+        }
+
+        public async Task RemoveMemberAsync(Guid projectId, Guid coordinatorId, Guid userId) {
+            await _auth.EnsureCanManageProjectAsync(coordinatorId, projectId);
+
+            if (!await _projects.IsMemberAsync(projectId, userId))
+                throw new NotFoundException("El usuario no es miembro del proyecto");
+
+            await _projects.RemoveMemberAsync(projectId, userId);
+
+            await _notifications.NotifyAsync(
+                userId,
+                "Te han quitado de un proyecto",
+                "Ya no formas parte del proyecto.",
+                NotificationType.Project);
+        }
+
         private static ProjectDto MapToDto(Project p, string ownerName) {
             var totalMinutes = p.TimeEntries?.Sum(te => te.DurationMin ?? 0) ?? 0;
             var hours = Math.Round(totalMinutes / 60.0, 1);
@@ -130,5 +168,7 @@ namespace Zezame.Api.Services {
                 p.CreatedAt
             );
         }
+        private static UserOrgDto MapToDtoUser(User n)
+            => new(n.Id, n.Email, n.FullName, n.Role);
     }
 }

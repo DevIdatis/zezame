@@ -1,0 +1,194 @@
+@if (open && project) {
+  <!-- Overlay -->
+  <div
+    class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in"
+    (click)="close()"
+  ></div>
+
+  <!-- Dialog -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+    <div
+      class="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl pointer-events-auto max-h-[90vh] flex flex-col"
+    >
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-3 border-b border-border/80">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">{{ project.emoji || '📁' }}</span>
+          <div>
+            <h2 class="text-xl font-display font-bold text-foreground">Gestionar Proyecto</h2>
+            <p class="text-sm text-muted-foreground">{{ project.name }}</p>
+          </div>
+        </div>
+        <button (click)="close()" class="p-2 hover:bg-muted rounded-lg transition-colors">
+          <lucide-icon [img]="icons.X" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto px-6 py-3 space-y-6">
+        <!-- Info básica -->
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium text-foreground mb-1 block">Nombre</label>
+            <input
+              type="text"
+              [value]="editableName()"
+              (input)="editableName.set($any($event.target).value)"
+              class="w-full rounded-xl border border-border/50 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50"
+            />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-foreground mb-1 block">Descripción</label>
+            <textarea
+              rows="3"
+              [value]="editableDescription()"
+              (input)="editableDescription.set($any($event.target).value)"
+              class="w-full rounded-xl border border-border/50 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Estado -->
+        <div>
+          <label class="text-sm font-medium text-foreground mb-2 block">Estado</label>
+          <div class="flex gap-2">
+            @for (s of statuses; track s.value) {
+              <button
+                (click)="changeStatus($any(s.value))"
+                class="flex-1 px-3 py-2 rounded-lg text-sm font-medium border transition-colors"
+                [class]="
+                  selectedStatus() === s.value
+                    ? s.color + ' ring-2 ring-coral/40'
+                    : 'bg-background border-border text-muted-foreground hover:bg-muted'
+                "
+              >
+                {{ s.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Miembros -->
+        <div>
+          <label class="text-sm font-medium text-foreground mb-2 block">
+            Miembros ({{ members().length }})
+          </label>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- Columna izquierda: miembros actuales -->
+            <div>
+              <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                En el proyecto
+              </p>
+              <div
+                class="h-[220px] overflow-y-auto rounded-xl border border-border/50 bg-muted/20 p-2"
+              >
+                <div class="space-y-1">
+                  @for (member of members(); track member.id) {
+                    <div class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-muted/50">
+                      <img
+                        [src]="member.avatar"
+                        [alt]="member.fullName"
+                        class="w-7 h-7 rounded-lg flex-shrink-0"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-foreground truncate">
+                          {{ member.fullName }}
+                        </p>
+                        <p class="text-xs text-muted-foreground truncate">{{ member.email }}</p>
+                      </div>
+                      <button
+                        (click)="removeMember(member)"
+                        class="p-1 hover:bg-coral/10 text-muted-foreground hover:text-coral rounded-md transition-colors flex-shrink-0"
+                        title="Quitar del proyecto"
+                      >
+                        <lucide-icon [img]="icons.X" class="w-3.5 h-3.5"></lucide-icon>
+                      </button>
+                    </div>
+                  } @empty {
+                    <p class="text-sm text-muted-foreground text-center py-8">
+                      Sin miembros todavía
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna derecha: buscador + resultados -->
+            <div>
+              <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+                Añadir miembro
+              </p>
+              <div
+                class="rounded-xl border border-border/50 bg-muted/20 p-2 h-[220px] flex flex-col"
+              >
+                <input
+                  type="text"
+                  placeholder="Buscar usuario..."
+                  [value]="searchUser()"
+                  (input)="searchUser.set($any($event.target).value)"
+                  class="w-full rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-coral/50 mb-2 flex-shrink-0"
+                />
+
+                <div class="flex-1 overflow-y-auto">
+                  @if (!searchUser()) {
+                    <p class="text-xs text-muted-foreground text-center py-6">
+                      Escribe para buscar
+                    </p>
+                  } @else {
+                    <div class="space-y-1">
+                      @for (user of filteredAvailableUsers(); track user.id) {
+                        <button
+                          (click)="onAddMemberClick(user)"
+                          class="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-coral/10 transition-colors text-left group"
+                        >
+                          <img
+                            [src]="user.avatar"
+                            [alt]="user.fullName"
+                            class="w-7 h-7 rounded-lg flex-shrink-0"
+                          />
+                          <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-foreground truncate">
+                              {{ user.fullName }}
+                            </p>
+                            <p class="text-xs text-muted-foreground truncate">{{ user.email }}</p>
+                          </div>
+                          <lucide-icon
+                            [img]="icons.Plus"
+                            class="w-4 h-4 text-muted-foreground group-hover:text-coral transition-colors flex-shrink-0"
+                          ></lucide-icon>
+                        </button>
+                      } @empty {
+                        <p class="text-xs text-muted-foreground text-center py-6">Sin resultados</p>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 p-6 border-t border-border/50">
+        <button
+          (click)="close()"
+          class="px-4 py-2 rounded-xl border border-border text-foreground hover:bg-muted transition-colors font-medium"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="save()"
+          [disabled]="saving()"
+          class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-coral to-yellow hover:opacity-90 text-white font-semibold transition-opacity disabled:opacity-50"
+        >
+          @if (saving()) {
+            <lucide-icon [img]="icons.Loader2" class="w-4 h-4 animate-spin"></lucide-icon>
+          }
+          Guardar cambios
+        </button>
+      </div>
+    </div>
+  </div>
+}

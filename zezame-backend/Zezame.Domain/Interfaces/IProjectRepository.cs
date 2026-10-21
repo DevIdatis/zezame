@@ -14,5 +14,6 @@ namespace Zezame.Domain.Interfaces {
         // IDs de usuarios con los que el usuario comparte proyecto (propietarios y
         // miembros de sus proyectos, incluido él mismo). Para acotar el ranking de equipo.
         Task<IEnumerable<Guid>> GetTeammateUserIdsAsync(Guid userId);
+        Task RemoveMemberAsync(Guid projectId, Guid userId);
     }
 }

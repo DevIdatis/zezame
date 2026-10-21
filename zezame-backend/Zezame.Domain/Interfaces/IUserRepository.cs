@@ -5,6 +5,7 @@ namespace Zezame.Domain.Interfaces {
     public interface IUserRepository : IRepository<User> {
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByIdWithProjectsAsync(Guid id);
+        Task<IEnumerable<User>> GetAllByOrganization(Guid orgId);
         Task<IEnumerable<User>> GetByRoleAsync(OrganizationRole role);
     }
 }

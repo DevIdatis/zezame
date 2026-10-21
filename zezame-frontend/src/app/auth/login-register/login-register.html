@@ -151,14 +151,20 @@
         </div>
         @if (!isSignUp) {
           <div class="text-right -mt-2">
-            <button type="button" (click)="requestPasswordReset()" class="text-sm text-coral font-medium">
+            <button
+              type="button"
+              (click)="requestPasswordReset()"
+              class="text-sm text-coral font-medium"
+            >
               ¿Has olvidado tu contraseña?
             </button>
           </div>
         }
 
         @if (resetMsg) {
-          <p class="text-sm text-muted-foreground bg-muted/50 rounded-xl px-4 py-2">{{ resetMsg }}</p>
+          <p class="text-sm text-muted-foreground bg-muted/50 rounded-xl px-4 py-2">
+            {{ resetMsg }}
+          </p>
         }
         <!-- Submit -->
         <button

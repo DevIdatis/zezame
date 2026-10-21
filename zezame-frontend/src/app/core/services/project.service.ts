@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateProjectRequest, Project, UpdateProjectRequest } from '../models';
+import { CreateProjectRequest, Project, UpdateProjectRequest, UserOrgDto } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
@@ -29,5 +29,21 @@ export class ProjectService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.api}/projects/${id}`);
+  }
+
+  addMember(projectId: string, userId: string): Observable<void> {
+    return this.http.post<void>(`${this.api}/projects/${projectId}/members/${userId}`, {});
+  }
+
+  removeMember(projectId: string, userId: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/projects/${projectId}/members/${userId}`);
+  }
+
+  getMembersOrganization(): Observable<UserOrgDto[]> {
+    return this.http.get<UserOrgDto[]>(`${this.api}/projects/GetMembersOrganization`);
+  }
+
+  getProjectMembers(projectId: string): Observable<UserOrgDto[]> {
+    return this.http.get<UserOrgDto[]>(`${this.api}/projects/${projectId}/members`);
   }
 }

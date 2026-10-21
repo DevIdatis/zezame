@@ -1,4 +1,12 @@
-import { Component, EventEmitter, inject, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule, Eye, EyeOff, Lock, Mail, Sparkles, X } from 'lucide-angular';
 import { Router } from '@angular/router';
@@ -13,7 +21,7 @@ import { ErrorModalService } from '../../core/services/error-modal.service';
   templateUrl: './login-register.html',
   styleUrl: './login-register.scss',
 })
-export class LoginRegister implements OnChanges{
+export class LoginRegister implements OnChanges {
   private fb = inject(FormBuilder);
   protected auth = inject(AuthService);
   private router = inject(Router);
@@ -57,7 +65,8 @@ export class LoginRegister implements OnChanges{
     }
     // Respuesta neutra: el backend no revela si el email existe.
     this.auth.forgotPassword(email).subscribe({ next: () => {}, error: () => {} });
-    this.resetMsg = 'Si ese email tiene cuenta, te hemos enviado instrucciones para restablecer la contraseña.';
+    this.resetMsg =
+      'Si ese email tiene cuenta, te hemos enviado instrucciones para restablecer la contraseña.';
   }
 
   submit() {

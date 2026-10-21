@@ -33,5 +33,4 @@ export class Navbar {
     this.showLogin = true;
     this.signUp = true;
   }
-  
 }
