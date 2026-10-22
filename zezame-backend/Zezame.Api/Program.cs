@@ -48,7 +48,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         opts.TokenValidationParameters = new TokenValidationParameters {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = true,
+            ValidateLifetime = false,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
@@ -67,6 +67,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     path.StartsWithSegments("/timeHub")) {
                     context.Token = accessToken;
                 }
+                return Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context => {
+                var logger = context.HttpContext.RequestServices
+                    .GetRequiredService<ILogger<Program>>();
+                logger.LogWarning(context.Exception,
+                    "JWT RECHAZADO: {Message}", context.Exception.Message);
+                return Task.CompletedTask;
+            },
+            OnChallenge = context => {
+                var logger = context.HttpContext.RequestServices
+                    .GetRequiredService<ILogger<Program>>();
+                logger.LogWarning(
+                    "JWT CHALLENGE: error={Error} desc={Description}",
+                    context.Error, context.ErrorDescription);
                 return Task.CompletedTask;
             }
         };

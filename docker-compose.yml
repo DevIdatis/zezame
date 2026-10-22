@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: zezame-db
       POSTGRES_USER: zezame_user
-      POSTGRES_PASSWORD: masterkey
+      POSTGRES_PASSWORD: very_secure_password
     ports:
       - "5432:5432"
     volumes:
@@ -18,6 +18,19 @@ services:
     networks:
       - zezame-network
 
+  migrator:
+    build:
+      context: ./zezame-backend
+      dockerfile: Zezame.Migrator/Dockerfile
+    container_name: zezame-migrator
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ConnectionStrings__Default=Host=db;Port=5432;Database=zezame-db;Username=zezame_user;Password=very_secure_password
+    networks:
+      - zezame-network
+  
   backend:
     build:
       context: ./zezame-backend
@@ -26,12 +39,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=zezame-db;Username=zezame_user;Password=masterkey
+      - ConnectionStrings__Default=Host=db;Port=5432;Database=zezame-db;Username=zezame_user;Password=very_secure_password
       - Jwt__Key=una_clave_larga_y_segura_para_firmar_los_tokens
-      - RESEND_APITOKEN=re_tu_api_key_de_resend
+      - RESEND_APITOKEN=resend_api_token_aqui
     ports:
       - "7107:8080"
     networks:
