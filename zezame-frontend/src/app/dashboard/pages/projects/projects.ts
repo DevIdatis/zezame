@@ -38,6 +38,7 @@ export class Projects implements OnInit {
   private authorization = inject(AuthorizationService);
   showCreate = signal(false);
   readonly isOwner = computed(() => this.authorization.isOwner());
+  readonly isAdmin = computed(() => this.authorization.isAdmin());
   icons = {
     Target,
     Plus,

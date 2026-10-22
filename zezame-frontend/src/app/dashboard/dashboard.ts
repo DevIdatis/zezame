@@ -75,6 +75,7 @@ export class Dashboard {
   private currentUser = signal<User | null>(null);
 
   readonly isOwner = computed(() => this.authorization.isOwner());
+  readonly isAdmin = computed(() => this.authorization.isAdmin());
 
   constructor() {
     this.auth.currentUser$.pipe(takeUntilDestroyed()).subscribe((u) => this.currentUser.set(u));
@@ -112,7 +113,7 @@ export class Dashboard {
       icon: this.icons.UserPlus,
       label: 'Invitaciones',
       path: '/dashboard/invitations',
-      canSee: this.isOwner(),
+      canSee: this.isOwner() || this.isAdmin(),
     },
     { icon: this.icons.Settings, label: 'Ajustes', path: '/dashboard/settings', canSee: true },
   ];

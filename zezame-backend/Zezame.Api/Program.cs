@@ -3,6 +3,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Resend;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -23,6 +24,10 @@ var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:4200
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException(
         "Falta la configuración 'Jwt:Key'. Defínela en user-secrets o en una variable de entorno.");
+
+var resendKey = builder.Configuration["RESEND_APITOKEN"]
+    ?? throw new InvalidOperationException(
+        "Falta la configuración 'RESEND_APITOKEN'. Defínela en user-secrets o en una variable de entorno.");
 
 builder.Services.AddCors(o => o.AddPolicy("CorsPolicy", p => p
     .WithOrigins(frontendUrl) // Origen espec�fico, no wildcard
@@ -92,6 +97,13 @@ builder.Services.AddRateLimiter(options => {
 
 builder.Services.AddSignalR();
 
+builder.Services.AddOptions();
+builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<ResendClientOptions>(o => {
+    o.ApiToken = resendKey;
+});
+builder.Services.AddTransient<IResend, ResendClient>();
+
 // Repositorios
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -102,6 +114,7 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 
 // Contexto de tenant (organización de la petición), consumido por el query filter de EF.
 builder.Services.AddScoped<ITenantContext, TenantContext>();

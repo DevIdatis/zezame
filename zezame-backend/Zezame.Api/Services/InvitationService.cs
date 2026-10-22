@@ -14,12 +14,14 @@ namespace Zezame.Api.Services {
         IInvitationRepository invitations,
         IEmailSender email,
         ITokenIssuer tokenIssuer,
+        IOrganizationRepository org,
         IConfiguration cfg) {
 
         private readonly IUserRepository _users = users;
         private readonly IInvitationRepository _invitations = invitations;
         private readonly IEmailSender _email = email;
         private readonly ITokenIssuer _tokenIssuer = tokenIssuer;
+        private readonly IOrganizationRepository _org = org;
         private readonly IConfiguration _cfg = cfg;
 
         private static readonly TimeSpan InvitationTtl = TimeSpan.FromDays(7);
@@ -30,6 +32,8 @@ namespace Zezame.Api.Services {
                 ?? throw new UnauthorizedException();
             if (inviter.OrganizationId is not Guid orgId)
                 throw new InvalidOperationException("El usuario no pertenece a ninguna organización");
+
+            var organization = await _org.GetByIdAsync((Guid)inviter.OrganizationId);
 
             if (!Enum.TryParse<OrganizationRole>(dto.Role, ignoreCase: true, out var role)
                 || role == OrganizationRole.Owner)
@@ -55,7 +59,7 @@ namespace Zezame.Api.Services {
             };
             await _invitations.AddAsync(invitation);
 
-            await SendInvitationEmailAsync(email, role, raw);
+            await SendInvitationEmailAsync(email, role, raw, organization?.Name);
             return ToDto(invitation);
         }
 
@@ -86,7 +90,7 @@ namespace Zezame.Api.Services {
             invitation.ExpiresAt = DateTime.UtcNow.Add(InvitationTtl);
             await _invitations.UpdateAsync(invitation);
 
-            await SendInvitationEmailAsync(invitation.Email, invitation.Role, raw);
+            await SendInvitationEmailAsync(invitation.Email, invitation.Role, raw, string.Empty);
         }
 
         public async Task<TokenDto> AcceptAsync(AcceptInvitationDto dto) {
@@ -125,11 +129,12 @@ namespace Zezame.Api.Services {
             return invitation;
         }
 
-        private Task SendInvitationEmailAsync(string email, OrganizationRole role, string rawToken)
-            => _email.SendAsync(email, "Te han invitado a Zezame",
-                $"Te han invitado a unirte a una organización en Zezame como {role}.\n" +
-                $"Acepta la invitación aquí (caduca en 7 días):\n" +
-                $"{FrontendUrl}/accept-invitation?token={rawToken}");
+        private async Task SendInvitationEmailAsync(string email, OrganizationRole role, string rawToken, string organizationName)
+            => await _email.SendAsync(email, $"Invitación a Zezame!!", $"{FrontendUrl}/accept-invitation?token={rawToken}", organizationName);
+            //=> _email.SendAsync(email, "Te han invitado a Zezame",
+            //    $"Te han invitado a unirte a una organización en Zezame como {role}.\n" +
+            //    $"Acepta la invitación aquí (caduca en 7 días):\n" +
+            //    $"{FrontendUrl}/accept-invitation?token={rawToken}");
 
         private static InvitationDto ToDto(Invitation i) =>
             new(i.Id, i.Email, i.Role.ToString(), i.Status.ToString(), i.ExpiresAt, i.CreatedAt);

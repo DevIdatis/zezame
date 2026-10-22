@@ -38,6 +38,10 @@ export class AuthorizationService {
     return this.hasRole(OrganizationRole.Owner);
   }
 
+  isAdmin(): boolean {
+    return this.hasRole(OrganizationRole.Admin);
+  }
+
   canManageUsers(): boolean {
     return this.hasMinimumRole(OrganizationRole.Admin);
   }
