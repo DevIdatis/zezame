@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://prodapi.com',
-  hubUrl: 'https://prodhub.com',
+  apiUrl: 'http://localhost:7107/api',
+  hubUrl: 'http://localhost:7107/timehub',
 };

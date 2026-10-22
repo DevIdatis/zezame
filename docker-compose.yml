@@ -1,0 +1,60 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: zezame-postgres
+    environment:
+      POSTGRES_DB: zezame-db
+      POSTGRES_USER: zezame_user
+      POSTGRES_PASSWORD: masterkey
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zezame_user -d zezame-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zezame-network
+
+  backend:
+    build:
+      context: ./zezame-backend
+      dockerfile: Zezame.Api/Dockerfile
+    container_name: zezame-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=zezame-db;Username=zezame_user;Password=masterkey
+      - Jwt__Key=una_clave_larga_y_segura_para_firmar_los_tokens
+      - RESEND_APITOKEN=re_tu_api_key_de_resend
+    ports:
+      - "7107:8080"
+    networks:
+      - zezame-network
+
+  frontend:
+    build:
+      context: ./zezame-frontend
+      dockerfile: Dockerfile
+    container_name: zezame-frontend
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+    ports:
+      - "4200:4000"
+    networks:
+      - zezame-network
+
+volumes:
+  postgres_data:
+
+networks:
+  zezame-network:
+    driver: bridge
